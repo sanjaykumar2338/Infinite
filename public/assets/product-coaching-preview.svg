@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="620" viewBox="0 0 900 620" role="img" aria-labelledby="title desc">
+  <title id="title">Infinite Sugar coaching product preview</title>
+  <desc id="desc">A colorful themed preview of a coaching dashboard, report cards, and KPI chart.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff7fb"/>
+      <stop offset=".55" stop-color="#f6f3ff"/>
+      <stop offset="1" stop-color="#ecfbf8"/>
+    </linearGradient>
+    <linearGradient id="brand" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f66f9b"/>
+      <stop offset="1" stop-color="#7c5cff"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="24" stdDeviation="28" flood-color="#1f2937" flood-opacity=".14"/>
+    </filter>
+  </defs>
+  <rect width="900" height="620" rx="38" fill="url(#bg)"/>
+  <path d="M82 502C176 430 215 520 306 466C397 412 418 284 528 298C638 312 682 218 812 150" fill="none" stroke="#7c5cff" stroke-width="4" stroke-linecap="round" opacity=".22"/>
+  <g filter="url(#shadow)">
+    <rect x="92" y="78" width="716" height="464" rx="32" fill="#fff"/>
+    <rect x="92" y="78" width="716" height="78" rx="32" fill="#171d2a"/>
+    <circle cx="140" cy="117" r="10" fill="#f66f9b"/>
+    <circle cx="174" cy="117" r="10" fill="#f4b740"/>
+    <circle cx="208" cy="117" r="10" fill="#22c7a9"/>
+    <rect x="602" y="106" width="132" height="22" rx="11" fill="#303746"/>
+  </g>
+  <rect x="140" y="204" width="210" height="250" rx="26" fill="#f8f6ff"/>
+  <rect x="172" y="236" width="70" height="70" rx="22" fill="url(#brand)"/>
+  <text x="207" y="279" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="25" font-weight="800" fill="#fff">IS</text>
+  <text x="172" y="344" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="800" fill="#17202a">Forge report</text>
+  <text x="172" y="376" font-family="Inter, Arial, sans-serif" font-size="17" fill="#6a7280">Weekly coaching notes,</text>
+  <text x="172" y="402" font-family="Inter, Arial, sans-serif" font-size="17" fill="#6a7280">KPIs, and badge progress.</text>
+  <rect x="172" y="426" width="128" height="18" rx="9" fill="#22c7a9" opacity=".24"/>
+  <rect x="172" y="426" width="92" height="18" rx="9" fill="#22c7a9"/>
+  <rect x="390" y="204" width="304" height="134" rx="24" fill="#fff7dc" stroke="#f4b740" stroke-opacity=".42"/>
+  <text x="424" y="246" font-family="Inter, Arial, sans-serif" font-size="17" font-weight="800" fill="#8a640c">Coaching prompt</text>
+  <text x="424" y="278" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="800" fill="#17202a">Pause before pitching.</text>
+  <text x="424" y="308" font-family="Inter, Arial, sans-serif" font-size="17" fill="#6a7280">Let the client finish the concern.</text>
+  <rect x="390" y="370" width="304" height="84" rx="24" fill="#f3fbf8"/>
+  <rect x="426" y="416" width="30" height="22" rx="6" fill="#22c7a9"/>
+  <rect x="470" y="394" width="30" height="44" rx="6" fill="#7c5cff"/>
+  <rect x="514" y="404" width="30" height="34" rx="6" fill="#f66f9b"/>
+  <rect x="558" y="382" width="30" height="56" rx="6" fill="#f4b740"/>
+  <rect x="602" y="398" width="30" height="40" rx="6" fill="#22c7a9"/>
+  <text x="424" y="402" font-family="Inter, Arial, sans-serif" font-size="15" fill="#6a7280">Sunday KPI chart</text>
+</svg>

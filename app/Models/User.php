@@ -1,0 +1,91 @@
+<?php
+
+namespace App\Models;
+
+// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Database\Factories\UserFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+
+class User extends Authenticatable
+{
+    /** @use HasFactory<UserFactory> */
+    use HasFactory, Notifiable;
+
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var list<string>
+     */
+    protected $fillable = [
+        'firebase_uid',
+        'name',
+        'email',
+        'password',
+        'plan',
+        'status',
+        'stripe_customer_id',
+        'stripe_subscription_id',
+        'current_period_end',
+        'free_call_used',
+        'call_minutes_used',
+        'role',
+    ];
+
+    /**
+     * The attributes that should be hidden for serialization.
+     *
+     * @var list<string>
+     */
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'email_verified_at' => 'datetime',
+            'current_period_end' => 'datetime',
+            'free_call_used' => 'boolean',
+            'call_minutes_used' => 'integer',
+            'password' => 'hashed',
+        ];
+    }
+
+    public function reports()
+    {
+        return $this->hasMany(Report::class);
+    }
+
+    public function reportCharts()
+    {
+        return $this->hasMany(ReportChart::class);
+    }
+
+    public function badgeReports()
+    {
+        return $this->hasMany(BadgeReport::class);
+    }
+
+    public function callSessions()
+    {
+        return $this->hasMany(CallSession::class);
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    public function hasTestingAccess(): bool
+    {
+        return in_array($this->role, ['admin', 'tester'], true);
+    }
+}
