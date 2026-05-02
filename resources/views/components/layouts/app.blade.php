@@ -4,34 +4,56 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $title ?? 'Infinite Sugar' }}</title>
+    <title>{{ $title ?? 'infinitesugar' }}</title>
     <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
     <link rel="alternate icon" href="{{ asset('favicon.ico') }}">
-    <meta name="theme-color" content="#7c5cff">
+    <meta name="theme-color" content="#f8f2e4">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         :root {
-            --sugar-ink: #17202a;
-            --sugar-muted: #6a7280;
-            --sugar-line: #e8edf3;
-            --sugar-soft: #f7f4ff;
-            --sugar-pink: #f66f9b;
-            --sugar-violet: #7c5cff;
-            --sugar-mint: #22c7a9;
-            --sugar-gold: #f4b740;
+            --is-cream: #f8f2e4;
+            --is-cream-soft: #fcfaf4;
+            --is-paper: #fffdf8;
+            --is-nav: #eeeeee;
+            --is-ink: #17110c;
+            --is-brown: #5f3c18;
+            --is-brown-soft: #8b6a3e;
+            --is-gold: #a8873f;
+            --is-gold-rich: #b08b3b;
+            --is-gold-soft: #d6bf78;
+            --is-line: #e5d9c2;
+            --is-muted: #6f6252;
+            --is-content: 1050px;
+            --is-pricing: 620px;
+            --is-faq: 980px;
+        }
+
+        * {
+            letter-spacing: 0;
         }
 
         body {
             min-height: 100vh;
-            background:
-                radial-gradient(circle at 12% 0%, rgba(246, 111, 155, .14), transparent 34rem),
-                radial-gradient(circle at 92% 10%, rgba(34, 199, 169, .13), transparent 30rem),
-                linear-gradient(180deg, #fff 0%, #fbfcff 44%, #f6f8fb 100%);
-            color: var(--sugar-ink);
+            background: #fff;
+            color: var(--is-ink);
             font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         }
 
+        a {
+            color: var(--is-brown);
+        }
+
+        a:hover {
+            color: var(--is-gold);
+        }
+
         .site-shell {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
             overflow: hidden;
         }
 
@@ -39,193 +61,184 @@
             position: sticky;
             top: 0;
             z-index: 50;
-            background: rgba(255, 255, 255, .82);
-            backdrop-filter: blur(18px);
-            border-bottom: 1px solid rgba(232, 237, 243, .88);
+            border-bottom: 0;
+            background: var(--is-nav);
         }
 
-        .brand-mark {
-            width: 2.35rem;
-            height: 2.35rem;
-            display: inline-grid;
-            place-items: center;
-            border-radius: .9rem;
-            background: linear-gradient(135deg, var(--sugar-pink), var(--sugar-violet));
-            color: #fff;
-            font-weight: 800;
-            box-shadow: 0 12px 28px rgba(124, 92, 255, .24);
+        .site-nav .container {
+            width: min(76vw, 1500px);
+            min-height: 5.5rem;
+            max-width: none;
+            padding-inline: 0;
+        }
+
+        .brand-word {
+            color: #a8873f;
+            font-family: "Playfair Display", Georgia, serif;
+            font-size: clamp(2.35rem, 3vw, 2.8rem);
+            font-weight: 600;
+            line-height: 1;
+            padding-block: 0;
+            text-decoration: none;
         }
 
         .nav-link {
-            color: #4b5563;
-            font-weight: 600;
+            color: rgba(23, 17, 12, .68);
+            font-size: 1.06rem;
+            font-weight: 800;
         }
 
-        .nav-link:hover {
-            color: var(--sugar-violet);
+        .nav-link:hover,
+        .nav-link.active {
+            color: var(--is-brown);
         }
 
-        .btn-sugar {
-            --bs-btn-color: #fff;
-            --bs-btn-bg: #181d27;
-            --bs-btn-border-color: #181d27;
-            --bs-btn-hover-color: #fff;
-            --bs-btn-hover-bg: #2a3140;
-            --bs-btn-hover-border-color: #2a3140;
-            border-radius: 999px;
-            box-shadow: 0 16px 34px rgba(24, 29, 39, .18);
-            font-weight: 700;
-            padding: .8rem 1.2rem;
+        .nav-link[href$="#faqs"] {
+            color: #806b46;
         }
 
-        .btn-soft {
-            border: 1px solid var(--sugar-line);
-            border-radius: 999px;
-            background: rgba(255, 255, 255, .78);
-            color: var(--sugar-ink);
-            font-weight: 700;
-            padding: .8rem 1.2rem;
+        .site-nav .navbar-nav {
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: .15rem 1.55rem;
+            justify-content: flex-end;
         }
 
-        .btn-soft:hover {
-            border-color: rgba(124, 92, 255, .38);
-            color: var(--sugar-violet);
+        .text-muted {
+            color: var(--is-muted) !important;
+        }
+
+        main {
+            flex: 1 0 auto;
+            padding-block: 0;
+        }
+
+        .page-wrap {
+            max-width: var(--is-content);
+            margin-inline: auto;
+            padding-inline: clamp(1.25rem, 3vw, 2rem);
+        }
+
+        .section-block {
+            padding-block: clamp(3.5rem, 8vw, 7rem);
+        }
+
+        .section-band {
+            margin-inline: calc(50% - 50vw);
+            padding-inline: max(1.25rem, calc((100vw - var(--is-content)) / 2 + 2rem));
+            background: #e9e2d5;
+            border-block: 0;
         }
 
         .eyebrow {
             display: inline-flex;
             align-items: center;
             gap: .5rem;
-            padding: .42rem .75rem;
-            border: 1px solid rgba(124, 92, 255, .16);
-            border-radius: 999px;
-            background: rgba(255, 255, 255, .7);
-            color: #6954cb;
-            font-size: .78rem;
+            color: var(--is-gold);
+            font-size: .75rem;
             font-weight: 800;
             text-transform: uppercase;
-            letter-spacing: 0;
+        }
+
+        .eyebrow::before {
+            content: "";
+            width: 2.4rem;
+            height: 1px;
+            background: currentColor;
+        }
+
+        .display-serif,
+        .hero-title,
+        .section-title {
+            color: var(--is-ink);
+            font-family: "Playfair Display", Georgia, "Times New Roman", serif;
+            font-weight: 600;
         }
 
         .hero-title {
-            max-width: 13ch;
-            font-size: clamp(3.05rem, 7vw, 6.8rem);
-            line-height: .95;
-            letter-spacing: 0;
+            max-width: 11ch;
+            font-size: clamp(3.25rem, 8.4vw, 7.25rem);
+            line-height: .98;
         }
 
         .section-title {
-            font-size: clamp(2rem, 4vw, 3.65rem);
-            line-height: 1;
-            letter-spacing: 0;
+            font-size: clamp(2rem, 4vw, 3rem);
+            line-height: 1.04;
         }
 
         .lead-copy {
-            color: var(--sugar-muted);
-            font-size: clamp(1.05rem, 1.8vw, 1.28rem);
-            line-height: 1.7;
+            color: var(--is-muted);
+            font-size: clamp(1rem, 1.35vw, 1.125rem);
+            line-height: 1.72;
+        }
+
+        .btn-sugar {
+            --bs-btn-color: #fffdf8;
+            --bs-btn-bg: #b59a63;
+            --bs-btn-border-color: #fffdf8;
+            --bs-btn-hover-color: #fffdf8;
+            --bs-btn-hover-bg: #96763b;
+            --bs-btn-hover-border-color: #fffdf8;
+            border-radius: 999px;
+            box-shadow: 0 12px 22px rgba(95, 60, 24, .22);
+            font-weight: 800;
+            padding: .95rem 1.65rem;
+        }
+
+        .btn-soft {
+            border: 1px solid rgba(95, 60, 24, .24);
+            border-radius: 999px;
+            background: rgba(255, 253, 248, .64);
+            color: var(--is-brown);
+            font-weight: 800;
+            padding: .78rem 1.22rem;
+        }
+
+        .btn-soft:hover {
+            border-color: var(--is-gold);
+            background: var(--is-paper);
+            color: var(--is-ink);
+        }
+
+        .surface-card,
+        .feature-card,
+        .pricing-card {
+            border: 1px solid rgba(95, 60, 24, .14);
+            border-radius: .5rem;
+            background: rgba(255, 253, 248, .72);
         }
 
         .surface-card {
-            border: 1px solid rgba(232, 237, 243, .96);
-            border-radius: 1.5rem;
-            background: rgba(255, 255, 255, .86);
-            box-shadow: 0 24px 70px rgba(31, 41, 55, .08);
-        }
-
-        .auth-shell {
-            max-width: 78rem;
-            margin-inline: auto;
-            padding: clamp(1.25rem, 3vw, 2rem);
-        }
-
-        .auth-layout {
-            --bs-gutter-x: clamp(3rem, 7vw, 6.5rem);
-            --bs-gutter-y: 2rem;
-        }
-
-        .auth-panel {
-            min-height: 100%;
-            border-radius: 1.2rem;
-            padding: clamp(2rem, 4.5vw, 3.5rem);
-            background:
-                linear-gradient(135deg, rgba(246,111,155,.16), rgba(124,92,255,.12)),
-                #fff;
-        }
-
-        .auth-panel .section-title {
-            max-width: 9.8ch;
-            font-size: clamp(2.45rem, 3.45vw, 3.35rem);
-            line-height: 1.08;
-        }
-
-        .auth-panel .lead-copy {
-            max-width: 22rem;
-            font-size: clamp(1rem, 1.4vw, 1.12rem);
-            line-height: 1.75;
-        }
-
-        .auth-media {
-            width: 100%;
-            display: block;
-            margin-top: clamp(2rem, 5vw, 3.5rem);
-            border-radius: 1.1rem;
-            box-shadow: 0 22px 52px rgba(89, 74, 137, .12);
-        }
-
-        .auth-form-panel {
-            min-height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            padding: clamp(2rem, 5vw, 4.25rem) 0;
-        }
-
-        .auth-form-panel > * {
-            width: 100%;
-            max-width: 35rem;
-        }
-
-        .auth-tabs {
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-
-        .auth-form-panel .form-control {
-            border-color: #dce3ec;
-            border-radius: .85rem;
-            padding: .78rem 1rem;
-        }
-
-        .auth-form-panel .form-label {
-            margin-bottom: .45rem;
-        }
-
-        .auth-form-panel form .mb-3 {
-            margin-bottom: 1.25rem !important;
-        }
-
-        .theme-media {
-            width: 100%;
-            display: block;
-            border-radius: 1.25rem;
-            border: 1px solid rgba(232, 237, 243, .92);
-            box-shadow: 0 24px 58px rgba(31,41,55,.08);
+            box-shadow: 0 18px 54px rgba(95, 60, 24, .06);
         }
 
         .feature-card {
-            min-height: 100%;
-            border: 1px solid rgba(232, 237, 243, .92);
-            border-radius: 1.35rem;
-            background: rgba(255, 255, 255, .78);
-            padding: 1.35rem;
-            transition: transform .18s ease, box-shadow .18s ease;
+            height: 100%;
+            padding: clamp(1.15rem, 2.4vw, 1.75rem);
         }
 
-        .feature-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 22px 44px rgba(31, 41, 55, .1);
+        .pricing-card {
+            height: 100%;
+            padding: clamp(1.5rem, 3vw, 2.25rem);
+        }
+
+        .pricing-card.featured {
+            border-color: rgba(168, 135, 63, .44);
+            background: linear-gradient(180deg, rgba(255,253,248,.96), rgba(248,242,228,.96));
+            box-shadow: 0 22px 58px rgba(95, 60, 24, .09);
+        }
+
+        .metric-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: .35rem;
+            border: 1px solid rgba(168, 135, 63, .28);
+            border-radius: 999px;
+            background: rgba(255, 253, 248, .74);
+            color: var(--is-brown);
+            padding: .38rem .75rem;
+            font-size: .78rem;
+            font-weight: 800;
         }
 
         .icon-pill {
@@ -233,92 +246,148 @@
             height: 2.65rem;
             display: inline-grid;
             place-items: center;
-            border-radius: 1rem;
-            background: #f2efff;
-            color: var(--sugar-violet);
-            font-weight: 900;
+            border: 1px solid rgba(168, 135, 63, .24);
+            border-radius: 50%;
+            background: #f4ead1;
+            color: var(--is-brown);
+            font-family: "Playfair Display", Georgia, serif;
+            font-weight: 700;
         }
 
-        .metric-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: .35rem;
-            border-radius: 999px;
-            background: rgba(34, 199, 169, .12);
-            color: #117f6e;
-            padding: .38rem .7rem;
-            font-size: .78rem;
-            font-weight: 800;
+        .theme-media,
+        .hero-video {
+            width: 100%;
+            display: block;
+            border: 1px solid rgba(95, 60, 24, .16);
+            border-radius: .5rem;
+            background: #111;
+            box-shadow: 0 24px 70px rgba(95, 60, 24, .13);
         }
 
-        .dashboard-visual {
-            position: relative;
-            border-radius: 1.7rem;
-            padding: 1rem;
-            background:
-                linear-gradient(135deg, rgba(255,255,255,.86), rgba(255,255,255,.56)),
-                linear-gradient(135deg, rgba(246,111,155,.22), rgba(124,92,255,.2));
-            border: 1px solid rgba(255, 255, 255, .72);
-            box-shadow: 0 28px 80px rgba(89, 74, 137, .2);
+        .hero-video {
+            aspect-ratio: 16 / 9;
+            object-fit: cover;
         }
 
-        .app-window {
-            border-radius: 1.25rem;
-            background: #121723;
-            color: #fff;
-            overflow: hidden;
+        .home-hero {
+            width: min(calc(100vw - 2.5rem), 1320px);
+            min-height: 40rem;
+            margin-inline: 50%;
+            padding-block: clamp(4rem, 7vw, 6rem) clamp(3.5rem, 6vw, 5.4rem);
+            background: #fff;
+            transform: translateX(-50%);
         }
 
-        .app-window-top {
+        .home-hero .hero-title {
+            color: var(--is-gold-rich);
+            font-size: clamp(3.35rem, 4.5vw, 5.125rem);
+            line-height: 1.03;
+        }
+
+        .home-hero .lead-copy {
+            max-width: 33rem;
+            color: #8b7657;
+            font-size: clamp(1.25rem, 1.8vw, 1.55rem);
+            line-height: 1.35;
+        }
+
+        .hero-kicker {
+            max-width: 35rem;
+            color: #9b845e;
+            font-size: clamp(1.28rem, 1.8vw, 1.65rem);
+            font-weight: 600;
+            line-height: 1.15;
+        }
+
+        .home-hero .hero-video {
+            border: 0;
+            border-radius: 0;
+            box-shadow: none;
+        }
+
+        .home-hero-media {
             display: flex;
-            gap: .42rem;
-            padding: .85rem 1rem;
-            background: #1f2634;
+            justify-content: flex-end;
         }
 
-        .app-dot {
-            width: .7rem;
-            height: .7rem;
-            border-radius: 999px;
-            background: #f66f9b;
+        .home-hero-media .hero-video {
+            max-width: 760px;
         }
 
-        .app-dot:nth-child(2) { background: #f4b740; }
-        .app-dot:nth-child(3) { background: #22c7a9; }
-
-        .insight-line {
-            border: 1px solid rgba(255,255,255,.08);
-            border-radius: 1rem;
-            background: rgba(255,255,255,.05);
-            padding: .9rem;
+        .forge-story {
+            padding-block: clamp(4.5rem, 7vw, 6.5rem);
         }
 
-        .placeholder-media {
-            min-height: 15rem;
-            border: 1px dashed rgba(124, 92, 255, .36);
-            border-radius: 1.4rem;
-            background: linear-gradient(135deg, rgba(124, 92, 255, .08), rgba(34, 199, 169, .08));
-            display: grid;
-            place-items: center;
-            color: #6954cb;
-            font-weight: 800;
+        .forge-story-title {
+            color: var(--is-gold-rich);
+            font-family: "Playfair Display", Georgia, serif;
+            font-size: clamp(3.625rem, 7vw, 5.125rem);
+            font-weight: 600;
+            line-height: .95;
+        }
+
+        .forge-story-copy {
+            max-width: var(--is-content);
+            color: var(--is-ink);
+            font-family: "Playfair Display", Georgia, serif;
+            font-size: clamp(2rem, 3.6vw, 2.375rem);
+            font-weight: 600;
+            line-height: 1.06;
+        }
+
+        .text-gold {
+            color: var(--is-gold-rich);
+        }
+
+        .pricing-stage {
+            max-width: var(--is-pricing);
+            margin-inline: auto;
+            padding: 1rem;
+            background: #c7af69;
+        }
+
+        .pricing-panel {
+            border-radius: 1.1rem;
+            background: #fff;
+            padding: clamp(1.35rem, 3vw, 1.9rem);
+        }
+
+        .pricing-panel + .pricing-panel {
+            margin-top: 1.25rem;
+        }
+
+        .pricing-plan-row {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .pricing-plan-name,
+        .pricing-plan-price {
+            color: var(--is-gold-rich);
+            font-family: "Playfair Display", Georgia, serif;
+            font-size: clamp(2.25rem, 3.4vw, 2.75rem);
+            font-weight: 600;
+            line-height: 1;
+        }
+
+        .pricing-panel p,
+        .pricing-panel li {
+            color: #171717;
+            font-size: clamp(1rem, 1.3vw, 1.125rem);
+            line-height: 1.4;
+        }
+
+        .pricing-panel .btn-linkish {
+            display: block;
+            margin-top: 2rem;
+            color: #171717;
+            font-size: clamp(1rem, 1.3vw, 1.125rem);
+            font-weight: 900;
             text-align: center;
-            padding: 2rem;
-        }
-
-        .pricing-card {
-            border: 1px solid rgba(232, 237, 243, .92);
-            border-radius: 1.5rem;
-            background: rgba(255, 255, 255, .85);
-            padding: 1.6rem;
-            min-height: 100%;
-            box-shadow: 0 20px 54px rgba(31,41,55,.07);
-        }
-
-        .pricing-card.featured {
-            border-color: rgba(124, 92, 255, .28);
-            background: linear-gradient(180deg, #fff, #f8f6ff);
-            box-shadow: 0 26px 70px rgba(124, 92, 255, .15);
+            text-decoration: none;
         }
 
         .check-list {
@@ -329,73 +398,215 @@
 
         .check-list li {
             display: flex;
-            gap: .6rem;
-            margin-bottom: .75rem;
-            color: #4b5563;
+            gap: .7rem;
+            color: var(--is-muted);
+            margin-bottom: .78rem;
         }
 
         .check-list li::before {
-            content: "+";
-            color: #119b83;
-            font-weight: 900;
+            content: "";
+            width: .45rem;
+            height: .45rem;
+            flex: 0 0 .45rem;
+            margin-top: .55rem;
+            border-radius: 50%;
+            background: var(--is-gold);
         }
 
-        main {
-            padding-block: 4rem 5rem;
+        .placeholder-media {
+            min-height: 14rem;
+            display: grid;
+            place-items: center;
+            border: 1px dashed rgba(95, 60, 24, .26);
+            border-radius: .5rem;
+            background: rgba(255, 253, 248, .52);
+            color: var(--is-brown-soft);
+            font-weight: 800;
+            padding: 2rem;
+            text-align: center;
         }
 
-        @media (max-width: 767.98px) {
+        .auth-shell {
+            max-width: var(--is-content);
+            margin-inline: auto;
+            padding: clamp(1rem, 3vw, 1.5rem);
+        }
+
+        .auth-panel {
+            min-height: 100%;
+            border-radius: .5rem;
+            padding: clamp(2rem, 5vw, 3.75rem);
+            background: var(--is-cream-soft);
+        }
+
+        .auth-media {
+            width: 100%;
+            display: block;
+            margin-top: clamp(2rem, 5vw, 3.5rem);
+            border: 1px solid rgba(95, 60, 24, .12);
+            border-radius: .5rem;
+            background: var(--is-paper);
+        }
+
+        .auth-form-panel {
+            min-height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: clamp(2rem, 5vw, 4rem) 0;
+        }
+
+        .auth-form-panel > * {
+            width: 100%;
+            max-width: 35rem;
+            margin-inline: auto;
+        }
+
+        .auth-tabs {
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-control,
+        .form-select {
+            border-color: rgba(95, 60, 24, .18);
+            border-radius: .5rem;
+            background-color: var(--is-paper);
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: var(--is-gold);
+            box-shadow: 0 0 0 .2rem rgba(168, 135, 63, .18);
+        }
+
+        .legal-doc {
+            max-width: 860px;
+            color: var(--is-muted);
+            font-size: 1rem;
+            line-height: 1.78;
+        }
+
+        .legal-doc h2 {
+            margin-top: 2.1rem;
+            color: var(--is-brown);
+            font-family: "Playfair Display", Georgia, serif;
+            font-size: clamp(1.45rem, 2.5vw, 2rem);
+            font-weight: 600;
+        }
+
+        .legal-doc h3 {
+            margin-top: 1.5rem;
+            color: var(--is-ink);
+            font-size: 1rem;
+            font-weight: 800;
+        }
+
+        .legal-doc p,
+        .legal-doc ul {
+            margin-bottom: 1rem;
+        }
+
+        .legal-doc li {
+            margin-bottom: .45rem;
+        }
+
+        .site-footer {
+            flex-shrink: 0;
+            margin-top: clamp(3rem, 7vw, 6rem);
+            border-top: 1px solid rgba(95, 60, 24, .12);
+            background: #f3ead6;
+        }
+
+        .footer-link {
+            color: rgba(23, 17, 12, .7);
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        @media (max-width: 991.98px) {
             .site-nav .container {
+                width: 100%;
                 align-items: flex-start;
                 gap: 1rem;
+                padding-inline: clamp(1rem, 4vw, 1.5rem);
             }
 
-            .navbar-nav {
-                flex-direction: row;
-                flex-wrap: wrap;
-                gap: .1rem .7rem;
+            .hero-video {
+                aspect-ratio: 16 / 10;
+            }
+
+            .home-hero {
+                width: 100%;
+                margin-inline: 0;
+                transform: none;
+            }
+
+            .home-hero-media .hero-video {
+                max-width: none;
+            }
+        }
+
+        @media (max-width: 575.98px) {
+            .brand-word {
+                font-size: 2rem;
             }
 
             .hero-title {
                 font-size: 3.15rem;
             }
 
-            main {
-                padding-block: 2.5rem 4rem;
+            .section-title {
+                font-size: 2.45rem;
+            }
+
+            .pricing-plan-row {
+                display: block;
+            }
+
+            .pricing-plan-price {
+                margin-top: .6rem;
             }
         }
     </style>
 </head>
 <body>
     <div class="site-shell">
-    <nav class="navbar navbar-expand-lg site-nav">
-        <div class="container py-2">
-            <a class="navbar-brand fw-bold d-inline-flex align-items-center gap-2" href="{{ route('home') }}">
-                <span class="brand-mark">IS</span>
-                <span>Infinite Sugar</span>
-            </a>
-            <div class="navbar-nav ms-auto align-items-center">
-                <a class="nav-link" href="{{ route('pricing') }}">Pricing</a>
-                <a class="nav-link" href="{{ route('reports.showcase') }}">Reports</a>
-                @auth
-                    <a class="nav-link" href="{{ route('dashboard') }}">Dashboard</a>
-                    <form method="post" action="{{ route('logout') }}" class="ms-lg-2">
-                        @csrf
-                        <button class="btn btn-sm btn-soft">Logout</button>
-                    </form>
-                @else
-                    <a class="btn btn-sm btn-soft ms-lg-2" href="{{ route('login') }}">Login</a>
-                    <a class="btn btn-sm btn-sugar ms-lg-1 py-2" href="{{ route('signup') }}">Sign up</a>
-                @endauth
+        <nav class="navbar site-nav">
+            <div class="container py-2">
+                <a class="navbar-brand brand-word" href="{{ route('home') }}">infinitesugar</a>
+                <div class="navbar-nav ms-auto align-items-center">
+                    <a class="nav-link" href="{{ route('home') }}">Home</a>
+                    <a class="nav-link" href="{{ route('forge') }}">Forge</a>
+                    <a class="nav-link" href="{{ route('spark') }}">Spark</a>
+                    <a class="nav-link" href="{{ route('pricing') }}">Pricing</a>
+                    <a class="nav-link" href="{{ route('home') }}#faqs">FAQs</a>
+                    @auth
+                        <a class="nav-link" href="{{ route('dashboard') }}">Dashboard</a>
+                    @endauth
+                </div>
             </div>
-        </div>
-    </nav>
-    <main class="container">
-        @if (session('status'))
-            <div class="alert alert-success">{{ session('status') }}</div>
-        @endif
-        {{ $slot }}
-    </main>
+        </nav>
+
+        <main>
+            <div class="page-wrap">
+                @if (session('status'))
+                    <div class="alert alert-success">{{ session('status') }}</div>
+                @endif
+
+                {{ $slot }}
+            </div>
+        </main>
+
+        <footer class="site-footer">
+            <div class="container d-flex flex-column flex-md-row justify-content-between gap-3 py-4">
+                <div class="fw-bold text-lowercase">infinitesugar</div>
+                <div class="d-flex flex-wrap gap-3">
+                    <a class="footer-link" href="{{ route('privacy') }}">Privacy Policy</a>
+                    <a class="footer-link" href="{{ route('terms') }}">Terms & Conditions</a>
+                </div>
+            </div>
+        </footer>
     </div>
 </body>
 </html>

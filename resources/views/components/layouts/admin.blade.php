@@ -6,19 +6,18 @@
     <title>{{ $title ?? 'Infinite Sugar Admin' }}</title>
     <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
     <link rel="alternate icon" href="{{ asset('favicon.ico') }}">
-    <meta name="theme-color" content="#111827">
+    <meta name="theme-color" content="#17110c">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         :root {
-            --admin-ink: #151a23;
-            --admin-muted: #697386;
-            --admin-line: #e7ebf2;
-            --admin-bg: #f5f7fb;
-            --admin-dark: #111827;
-            --admin-violet: #7c5cff;
-            --admin-pink: #f66f9b;
-            --admin-mint: #22c7a9;
-            --admin-gold: #f4b740;
+            --admin-ink: #17110c;
+            --admin-muted: #706253;
+            --admin-line: #e5d9c2;
+            --admin-bg: #f8f2e4;
+            --admin-dark: #17110c;
+            --admin-brown: #5f3c18;
+            --admin-gold: #a8873f;
+            --admin-paper: #fffdf8;
         }
 
         body {
@@ -40,9 +39,9 @@
             height: 100vh;
             padding: 1.1rem;
             background:
-                radial-gradient(circle at 20% 0%, rgba(246, 111, 155, .22), transparent 18rem),
-                linear-gradient(180deg, #121827, #0c111d);
-            color: #fff;
+                radial-gradient(circle at 20% 0%, rgba(168, 135, 63, .22), transparent 18rem),
+                linear-gradient(180deg, #3b250f, #17110c);
+            color: var(--admin-paper);
         }
 
         .admin-brand {
@@ -50,7 +49,7 @@
             align-items: center;
             gap: .75rem;
             padding: .75rem;
-            color: #fff;
+            color: var(--admin-paper);
             text-decoration: none;
         }
 
@@ -60,8 +59,8 @@
             display: inline-grid;
             place-items: center;
             border-radius: .9rem;
-            background: linear-gradient(135deg, var(--admin-pink), var(--admin-violet));
-            color: #fff;
+            background: linear-gradient(135deg, var(--admin-gold), var(--admin-brown));
+            color: var(--admin-paper);
             font-weight: 900;
         }
 
@@ -81,7 +80,7 @@
             border: 1px solid transparent;
             border-radius: .95rem;
             background: transparent;
-            color: rgba(255,255,255,.74);
+            color: rgba(255, 253, 248, .74);
             text-decoration: none;
             font-weight: 700;
             text-align: left;
@@ -90,9 +89,9 @@
         .admin-nav a:hover,
         .admin-nav a.active,
         .admin-logout:hover {
-            background: rgba(255,255,255,.08);
-            border-color: rgba(255,255,255,.1);
-            color: #fff;
+            background: rgba(255, 253, 248, .08);
+            border-color: rgba(255, 253, 248, .1);
+            color: var(--admin-paper);
         }
 
         .admin-content {
@@ -104,8 +103,8 @@
             top: 0;
             z-index: 20;
             padding: 1rem 1.5rem;
-            border-bottom: 1px solid rgba(231, 235, 242, .9);
-            background: rgba(245, 247, 251, .84);
+            border-bottom: 1px solid rgba(95, 60, 24, .12);
+            background: rgba(248, 242, 228, .86);
             backdrop-filter: blur(16px);
         }
 
@@ -114,10 +113,10 @@
         }
 
         .admin-card {
-            border: 1px solid rgba(231, 235, 242, .96);
+            border: 1px solid rgba(95, 60, 24, .14);
             border-radius: 1.2rem;
-            background: #fff;
-            box-shadow: 0 18px 45px rgba(17, 24, 39, .06);
+            background: var(--admin-paper);
+            box-shadow: 0 18px 45px rgba(95, 60, 24, .06);
         }
 
         .stat-card {
@@ -134,7 +133,7 @@
             width: 7rem;
             height: 7rem;
             border-radius: 50%;
-            background: rgba(124, 92, 255, .1);
+            background: rgba(168, 135, 63, .12);
         }
 
         .stat-label {
@@ -151,8 +150,8 @@
 
         .table-modern thead th {
             padding: .95rem 1rem;
-            background: #f8fafc;
-            color: #667085;
+            background: #fcfaf4;
+            color: var(--admin-muted);
             font-size: .76rem;
             font-weight: 900;
             text-transform: uppercase;
@@ -162,7 +161,7 @@
 
         .table-modern tbody td {
             padding: 1rem;
-            border-color: #eef2f7;
+            border-color: #eee3ce;
             vertical-align: middle;
         }
 
@@ -181,20 +180,20 @@
         .pill-active,
         .pill-forge,
         .pill-admin {
-            background: rgba(34, 199, 169, .13);
-            color: #0f7f6d;
+            background: rgba(168, 135, 63, .16);
+            color: #5f3c18;
         }
 
         .pill-free,
         .pill-user {
-            background: #eef2f7;
-            color: #526071;
+            background: #f0e6d2;
+            color: #6f6252;
         }
 
         .pill-spark,
         .pill-tester {
-            background: rgba(124, 92, 255, .12);
-            color: #6048d2;
+            background: rgba(95, 60, 24, .12);
+            color: #5f3c18;
         }
 
         .pill-past_due {
@@ -203,23 +202,23 @@
         }
 
         .pill-cancelled {
-            background: rgba(246, 111, 155, .14);
-            color: #bc3e68;
+            background: rgba(95, 60, 24, .12);
+            color: #7f2f12;
         }
 
         .form-control,
         .form-select {
-            border-color: #dfe5ee;
+            border-color: #d8c9ad;
             border-radius: .75rem;
         }
 
         .btn-admin {
             --bs-btn-color: #fff;
-            --bs-btn-bg: #111827;
-            --bs-btn-border-color: #111827;
+            --bs-btn-bg: #5f3c18;
+            --bs-btn-border-color: #5f3c18;
             --bs-btn-hover-color: #fff;
-            --bs-btn-hover-bg: #252f3f;
-            --bs-btn-hover-border-color: #252f3f;
+            --bs-btn-hover-bg: #17110c;
+            --bs-btn-hover-border-color: #17110c;
             border-radius: .75rem;
             font-weight: 800;
         }
@@ -227,15 +226,15 @@
         .btn-admin-soft {
             border: 1px solid var(--admin-line);
             border-radius: .75rem;
-            background: #fff;
+            background: var(--admin-paper);
             color: var(--admin-ink);
             font-weight: 800;
         }
 
         .upload-panel {
             border-radius: 1.2rem;
-            border: 1px solid rgba(124, 92, 255, .18);
-            background: linear-gradient(135deg, #fff, #f7f4ff);
+            border: 1px solid rgba(168, 135, 63, .2);
+            background: linear-gradient(135deg, #fffdf8, #f4ead1);
         }
 
         .mobile-admin-header {

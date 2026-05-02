@@ -4,10 +4,10 @@
             <div class="row auth-layout align-items-stretch">
                 <div class="col-lg-7">
                     <div class="auth-panel">
-                        <div class="eyebrow mb-3">User access</div>
-                        <h1 class="section-title fw-bold mb-3">{{ $mode === 'signup' ? 'Create your Infinite Sugar account.' : 'Welcome back to Infinite Sugar.' }}</h1>
-                        <p class="lead-copy mb-4">Firebase handles secure sign in, then Laravel verifies your token and opens your SaaS dashboard session.</p>
-                        <img class="auth-media" src="{{ asset('assets/auth-access-preview.svg') }}" alt="Infinite Sugar dashboard preview">
+                        <div class="eyebrow mb-3">Private access</div>
+                        <h1 class="section-title mb-3">{{ $mode === 'signup' ? 'Create your infinitesugar account.' : 'Welcome back to infinitesugar.' }}</h1>
+                        <p class="lead-copy mb-4">Sign in to review your plan, Spark access, Forge reports, charts, and badge summaries.</p>
+                        <img class="auth-media" src="{{ asset('assets/auth-access-preview.svg') }}" alt="infinitesugar dashboard preview">
                     </div>
                 </div>
                 <div class="col-lg-5">
