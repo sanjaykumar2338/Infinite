@@ -13,6 +13,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
+        html {
+            scroll-behavior: smooth;
+        }
+
         :root {
             --is-cream: #f8f2e4;
             --is-cream-soft: #fcfaf4;
@@ -595,10 +599,10 @@
             <div class="container py-2">
                 <a class="navbar-brand brand-word" href="{{ route('home') }}">infinitesugar</a>
                 <div class="navbar-nav ms-auto align-items-center">
-                    <a class="nav-link" href="{{ route('home') }}">Home</a>
-                    <a class="nav-link" href="{{ route('forge') }}">Forge</a>
-                    <a class="nav-link" href="{{ route('spark') }}">Spark</a>
-                    <a class="nav-link" href="{{ route('pricing') }}">Pricing</a>
+                    <a class="nav-link" href="{{ route('home') }}#top">Home</a>
+                    <a class="nav-link" href="{{ route('home') }}#forge">Forge</a>
+                    <a class="nav-link" href="{{ route('home') }}#spark">Spark</a>
+                    <a class="nav-link" href="{{ route('home') }}#pricing">Pricing</a>
                     <a class="nav-link" href="{{ route('home') }}#faqs">FAQs</a>
                     @auth
                         <a class="nav-link" href="{{ route('dashboard') }}">Dashboard</a>
