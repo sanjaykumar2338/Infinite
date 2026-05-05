@@ -97,6 +97,25 @@
             color: #806b46;
         }
 
+        .nav-logout-form {
+            display: inline-flex;
+            margin: 0;
+        }
+
+        .nav-logout-button {
+            border: 0;
+            background: transparent;
+            padding: .5rem 0;
+            color: rgba(23, 17, 12, .68);
+            font: inherit;
+            font-size: 1.06rem;
+            font-weight: 800;
+        }
+
+        .nav-logout-button:hover {
+            color: var(--is-brown);
+        }
+
         .site-nav .navbar-nav {
             flex-direction: row;
             flex-wrap: wrap;
@@ -583,6 +602,13 @@
                     <a class="nav-link" href="{{ route('home') }}#faqs">FAQs</a>
                     @auth
                         <a class="nav-link" href="{{ route('dashboard') }}">Dashboard</a>
+                        <a class="nav-link" href="{{ route('extension.download') }}">Install Extension</a>
+                        <form class="nav-logout-form" method="post" action="{{ route('logout') }}">
+                            @csrf
+                            <button class="nav-logout-button" type="submit">Logout</button>
+                        </form>
+                    @else
+                        <a class="nav-link" href="{{ route('login') }}">Login</a>
                     @endauth
                 </div>
             </div>

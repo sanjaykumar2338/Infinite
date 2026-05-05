@@ -485,7 +485,7 @@
                     <h1 class="reference-hero-title">Most Zoom calls fade into silence.</h1>
                     <p class="reference-hero-copy">One private window sees what others miss<br>— and speaks only to you.</p>
                     <div class="reference-hero-kicker">Presence Intelligence for High-Stakes Conversations</div>
-                    <a class="reference-hero-button" href="{{ route('signup') }}">Install Extension</a>
+                    <a class="reference-hero-button" href="{{ auth()->check() ? route('extension.download') : route('signup') }}">Install Extension</a>
                 </div>
                 <video class="reference-hero-video" autoplay muted loop playsinline controls poster="{{ asset('assets/product-coaching-preview.svg') }}">
                     <source src="{{ asset('assets/infinitesugar video (1).mp4') }}" type="video/mp4">
@@ -526,7 +526,7 @@
                 <h2 class="forge-title">SPARK</h2>
                 <p class="forge-line black">Live behavioral guidance. Private. Instant. Directional.</p>
                 <p class="is-plan-text" style="max-width: 760px;">A small floating window overlays your Zoom call — visible only to you. In a second, it signals direction and presence while the moment still matters.</p>
-                <a class="reference-hero-button" href="{{ route('signup') }}">Install Extension</a>
+                <a class="reference-hero-button" href="{{ auth()->check() ? route('extension.download') : route('signup') }}">Install Extension</a>
             </div>
         </section>
 

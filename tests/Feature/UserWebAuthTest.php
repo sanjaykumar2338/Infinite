@@ -86,7 +86,35 @@ class UserWebAuthTest extends TestCase
             ->assertSee('Unlocked')
             ->assertSee('Weekly Coaching Report')
             ->assertSee('Engagement KPI Chart')
-            ->assertSee('Monthly Confidence Badge');
+            ->assertSee('Monthly Confidence Badge')
+            ->assertSee('Install Extension')
+            ->assertSee('Logout');
+    }
+
+    public function test_signed_in_home_install_button_downloads_extension(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get('/')
+            ->assertOk()
+            ->assertSee(route('extension.download'), false);
+    }
+
+    public function test_extension_download_requires_login(): void
+    {
+        $this->get('/extension/download')
+            ->assertRedirect('/login');
+    }
+
+    public function test_signed_in_user_can_download_extension_archive(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get('/extension/download')
+            ->assertOk()
+            ->assertDownload('infinite-sugar-extension.zip');
     }
 
     public function test_logged_in_pricing_checkout_redirects_to_stripe(): void

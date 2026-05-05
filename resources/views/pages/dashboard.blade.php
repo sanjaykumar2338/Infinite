@@ -8,6 +8,13 @@
             <div class="eyebrow mb-3">User dashboard</div>
             <h1 class="section-title fw-bold mb-3">Welcome, {{ $user->name ?: $user->email }}.</h1>
             <p class="lead-copy mb-0">Your Firebase login is connected to Laravel plan, access, billing status, and report records.</p>
+            <div class="d-flex flex-wrap gap-2 mt-4">
+                <a class="btn btn-sugar" href="{{ route('extension.download') }}">Install Extension</a>
+                <form method="post" action="{{ route('logout') }}">
+                    @csrf
+                    <button class="btn btn-soft" type="submit">Logout</button>
+                </form>
+            </div>
         </div>
         <div class="col-lg-5">
             <div class="surface-card p-4">

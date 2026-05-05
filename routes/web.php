@@ -23,6 +23,17 @@ Route::get('/signup', [UserAuthController::class, 'create'])->name('signup');
 Route::post('/login/firebase', [UserAuthController::class, 'firebaseSession'])->name('login.firebase');
 Route::post('/logout', [UserAuthController::class, 'destroy'])->middleware('auth')->name('logout');
 Route::get('/dashboard', UserDashboardController::class)->middleware('auth')->name('dashboard');
+Route::get('/extension/download', function () {
+    $archive = public_path('downloads/infinite-sugar-extension.zip');
+
+    if (! file_exists($archive)) {
+        return redirect()
+            ->route('dashboard')
+            ->with('error', 'The extension download is not available yet. Please try again shortly.');
+    }
+
+    return response()->download($archive, 'infinite-sugar-extension.zip');
+})->middleware('auth')->name('extension.download');
 Route::get('/billing/checkout/{plan}', BillingCheckoutController::class)
     ->whereIn('plan', ['spark', 'forge'])
     ->name('billing.checkout');
