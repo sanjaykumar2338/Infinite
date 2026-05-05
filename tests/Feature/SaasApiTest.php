@@ -257,13 +257,21 @@ class SaasApiTest extends TestCase
             ->assertJsonPath('confidence', 0.72)
             ->assertJsonPath('features.live_guidance', true)
             ->assertJsonPath('features.advanced_reports', false)
+            ->assertJsonPath('access.call_minutes_used', 1)
+            ->assertJsonPath('access.remaining_minutes', 29)
+            ->assertJsonPath('usage.call_minutes_used', 1)
+            ->assertJsonPath('usage.free_call_used', false)
             ->assertJsonStructure([
                 'suggestion',
                 'timestamp',
                 'messages' => ['red', 'green', 'yellow', 'blue'],
                 'nose_position',
                 'access',
+                'usage',
             ]);
+
+        $this->assertSame(1, $free->fresh()->call_minutes_used);
+        $this->assertSame(1, CallSession::count());
     }
 
     public function test_analyze_blocks_free_users_after_trial_limit(): void
@@ -296,7 +304,17 @@ class SaasApiTest extends TestCase
             ->assertOk()
             ->assertJsonPath('signal', 'attention')
             ->assertJsonPath('features.live_guidance', true)
-            ->assertJsonPath('features.advanced_reports', false);
+            ->assertJsonPath('features.advanced_reports', false)
+            ->assertJsonPath('access.call_minutes_used', 1)
+            ->assertJsonPath('access.remaining_minutes', null)
+            ->assertJsonPath('usage.call_minutes_used', 1);
+
+        $this->assertSame(1, $spark->fresh()->call_minutes_used);
+        $this->assertDatabaseHas('call_sessions', [
+            'user_id' => $spark->id,
+            'minutes_counted' => 1,
+            'status' => 'active',
+        ]);
     }
 
     public function test_analyze_allows_forge_users_with_advanced_features(): void
@@ -312,7 +330,10 @@ class SaasApiTest extends TestCase
             ->assertOk()
             ->assertJsonPath('features.live_guidance', true)
             ->assertJsonPath('features.advanced_reports', true)
-            ->assertJsonPath('access.can_use_reports', true);
+            ->assertJsonPath('access.can_use_reports', true)
+            ->assertJsonPath('usage.call_minutes_used', 1);
+
+        $this->assertSame(1, $forge->fresh()->call_minutes_used);
     }
 
     public function test_analyze_validates_extension_payload(): void

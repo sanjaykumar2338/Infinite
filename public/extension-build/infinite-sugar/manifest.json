@@ -13,7 +13,7 @@
     "default_title": "InfiniteSugar",
     "default_icon": "assets/icon.png"
   },
-  "permissions": ["storage", "identity", "tabs", "windows"],
+  "permissions": ["storage", "identity", "tabs", "windows", "scripting"],
   "options_page": "options.html",
   "background": {
     "service_worker": "background.js"
@@ -21,6 +21,9 @@
   "host_permissions": [
     "http://127.0.0.1:8000/*",
     "https://mickolidia.easytechinfo.net/*",
+    "https://zoom.us/*",
+    "https://*.zoom.us/*",
+    "https://app.zoom.us/*",
     "https://api.emailjs.com/*",
     "https://firestore.googleapis.com/*",
     "https://firebasestorage.googleapis.com/*",
@@ -30,7 +33,17 @@
   ],
   "content_scripts": [
     {
-      "matches": ["https://*.zoom.us/wc/*"],
+      "matches": [
+        "https://zoom.us/wc/*",
+        "https://*.zoom.us/wc/*",
+        "https://app.zoom.us/wc/*",
+        "https://zoom.us/j/*",
+        "https://*.zoom.us/j/*",
+        "https://app.zoom.us/j/*",
+        "https://zoom.us/my/*",
+        "https://*.zoom.us/my/*",
+        "https://app.zoom.us/my/*"
+      ],
       "js": ["contentScript.js"],
       "css": ["contentStyle.css"],
       "all_frames": true,
@@ -39,12 +52,12 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["analyzer.html"],
-      "matches": ["https://*.zoom.us/*"]
+      "resources": ["analyzer.html", "analyzer.js", "*.js"],
+      "matches": ["https://zoom.us/*", "https://*.zoom.us/*", "https://app.zoom.us/*"]
     },
     {
-      "resources": ["assets/*.svg"],
-      "matches": ["https://*.zoom.us/*"]
+      "resources": ["assets/*.svg", "assets/*.png", "assets/fonts/*"],
+      "matches": ["https://zoom.us/*", "https://*.zoom.us/*", "https://app.zoom.us/*"]
     }
   ],
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqV/1CA5e5FVbUIy4AJpeRiabi0P5B8RFLOw0fVboNARIFbYrDBu/XnEuB5dQM7EN4rI8JZl5c+KCOyZA2WAO4L6dxdCNEbvxnVd/YkWW9W0LkIsfeJDMbhzDRnwuSEYQ4QPNcbBo4mnV8kdPnP2nK5RbXYaJlz/RSgFUA0Dpza0jNGiHWZd7gN6Cmuegea8SATuGVF5A0PRNTLH+0mc0qAtjJJivRn+kZwitda7x6vRn9FxV5T8Mlr+8fdSm7VvtKGrxNZj8ZqE9NoFd5XUyQI90pBTe0P2/dRGnk7yqtUsixypaI2gOT9W1dmQX0K1022Y+JOZs4xOYFOC179pbNQIDAQAB"

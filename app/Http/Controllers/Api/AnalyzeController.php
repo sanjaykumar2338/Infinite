@@ -4,13 +4,14 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Services\AccessService;
+use App\Services\CallUsageService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Throwable;
 
 class AnalyzeController extends Controller
 {
-    public function __invoke(Request $request, AccessService $access): JsonResponse
+    public function __invoke(Request $request, AccessService $access, CallUsageService $usage): JsonResponse
     {
         $data = $request->validate([
             'image' => ['required', 'string', 'starts_with:data:image/'],
@@ -30,8 +31,17 @@ class AnalyzeController extends Controller
         }
 
         try {
-            return response()->json($this->mockAnalysisResponse($data, $accessState));
-        } catch (Throwable) {
+            $usageState = $usage->touch($user);
+            $accessState = $access->check($usageState['user']);
+
+            return response()->json($this->mockAnalysisResponse($data, $accessState, [
+                'call_session_id' => $usageState['session']->id,
+                'call_minutes_used' => $usageState['user']->call_minutes_used,
+                'free_call_used' => $usageState['user']->free_call_used,
+            ]));
+        } catch (Throwable $exception) {
+            report($exception);
+
             return response()->json([
                 'message' => 'Unable to analyze the image right now.',
             ], 500);
@@ -43,9 +53,10 @@ class AnalyzeController extends Controller
      *
      * @param  array<string, mixed>  $data
      * @param  array<string, mixed>  $accessState
+     * @param  array<string, mixed>  $usageState
      * @return array<string, mixed>
      */
-    private function mockAnalysisResponse(array $data, array $accessState): array
+    private function mockAnalysisResponse(array $data, array $accessState, array $usageState): array
     {
         $mode = (int) ($data['mode'] ?? 0);
         $signal = match ($mode) {
@@ -77,6 +88,7 @@ class AnalyzeController extends Controller
                 'advanced_reports' => (bool) ($accessState['can_use_reports'] ?? false),
             ],
             'access' => $accessState,
+            'usage' => $usageState,
         ];
     }
 }
