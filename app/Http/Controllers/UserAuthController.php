@@ -71,8 +71,13 @@ class UserAuthController extends Controller
         Auth::login($user, true);
         $request->session()->regenerate();
 
+        $checkoutPlan = $request->session()->pull('checkout_plan');
+        $redirect = in_array($checkoutPlan, ['spark', 'forge'], true)
+            ? route('billing.checkout', $checkoutPlan)
+            : route('dashboard');
+
         return response()->json([
-            'redirect' => route('dashboard'),
+            'redirect' => $redirect,
         ]);
     }
 

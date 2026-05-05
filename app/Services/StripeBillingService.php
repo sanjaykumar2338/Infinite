@@ -8,6 +8,7 @@ use Stripe\Event;
 use Stripe\Exception\SignatureVerificationException;
 use Stripe\Stripe;
 use Stripe\Webhook;
+use UnexpectedValueException;
 
 class StripeBillingService
 {
@@ -19,11 +20,14 @@ class StripeBillingService
             abort(422, "Stripe price ID for $plan is not configured.");
         }
 
+        if (! config('services.stripe.secret')) {
+            abort(422, 'Stripe secret key is not configured.');
+        }
+
         Stripe::setApiKey(config('services.stripe.secret'));
 
-        return Session::create([
+        $payload = [
             'mode' => 'subscription',
-            'customer_email' => $user->email,
             'client_reference_id' => (string) $user->id,
             'line_items' => [
                 [
@@ -44,14 +48,27 @@ class StripeBillingService
                     'plan' => $plan,
                 ],
             ],
-        ]);
+        ];
+
+        if ($user->stripe_customer_id) {
+            $payload['customer'] = $user->stripe_customer_id;
+        } else {
+            $payload['customer_email'] = $user->email;
+        }
+
+        return Session::create($payload);
     }
 
     /**
      * @throws SignatureVerificationException
+     * @throws UnexpectedValueException
      */
     public function constructWebhookEvent(string $payload, ?string $signature): Event
     {
+        if (! config('services.stripe.webhook_secret')) {
+            throw new UnexpectedValueException('Stripe webhook secret is not configured.');
+        }
+
         return Webhook::constructEvent(
             $payload,
             $signature ?? '',

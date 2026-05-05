@@ -1,4 +1,8 @@
 <x-layouts.app title="Dashboard">
+    @if (request('checkout') === 'success')
+        <div class="alert alert-success mt-4 mb-0">Checkout completed. Your billing status will update as soon as Stripe confirms the subscription.</div>
+    @endif
+
     <section class="row align-items-center g-4 mb-5">
         <div class="col-lg-7">
             <div class="eyebrow mb-3">User dashboard</div>
@@ -18,6 +22,7 @@
         @foreach ([
             ['Current plan', ucfirst($user->plan), 'Plan managed by Stripe or admin'],
             ['Status', ucfirst(str_replace('_', ' ', $user->status)), 'Billing/access state'],
+            ['Period end', optional($user->current_period_end)->toFormattedDateString() ?: 'n/a', 'Paid-through date from Stripe'],
             ['Free call used', $user->free_call_used ? 'Yes' : 'No', 'Spark trial tracking'],
             ['Call minutes', $user->call_minutes_used, 'Backend-counted minutes'],
         ] as [$label, $value, $copy])
@@ -58,34 +63,50 @@
                     <div class="h4 fw-bold mb-0">{{ $access['can_use_reports'] ? 'Unlocked' : 'Locked' }}</div>
                 </div>
             </div>
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="text-muted small fw-bold text-uppercase mb-2">Charts</div>
+                    <div class="h4 fw-bold mb-0">{{ $access['can_use_charts'] ? 'Unlocked' : 'Locked' }}</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="text-muted small fw-bold text-uppercase mb-2">Badge reports</div>
+                    <div class="h4 fw-bold mb-0">{{ $access['can_use_badge_reports'] ? 'Unlocked' : 'Locked' }}</div>
+                </div>
+            </div>
         </div>
     </section>
 
     <section class="row g-4">
         @foreach ([
-            ['Weekly Reports', $user->reports, 'summary'],
-            ['Charts', $user->reportCharts, 'chart_type'],
-            ['Badge Reports', $user->badgeReports, 'badge_name'],
-        ] as [$heading, $items, $metaField])
+            ['Weekly Reports', $user->reports, 'summary', $access['can_use_reports']],
+            ['Charts', $user->reportCharts, 'chart_type', $access['can_use_charts']],
+            ['Badge Reports', $user->badgeReports, 'badge_name', $access['can_use_badge_reports']],
+        ] as [$heading, $items, $metaField, $isUnlocked])
             <div class="col-lg-4">
                 <div class="surface-card p-4 h-100">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h2 class="h5 fw-bold mb-0">{{ $heading }}</h2>
                         <span class="metric-pill">{{ $items->count() }}</span>
                     </div>
-                    @forelse ($items as $item)
-                        <div class="feature-card mb-3">
-                            <div class="fw-bold">{{ $item->title }}</div>
-                            <div class="small text-muted">
-                                {{ $item->{$metaField} ?: optional($item->published_at)->toDateString() ?: 'Available' }}
+                    @if ($isUnlocked)
+                        @forelse ($items as $item)
+                            <div class="feature-card mb-3">
+                                <div class="fw-bold">{{ $item->title }}</div>
+                                <div class="small text-muted">
+                                    {{ $item->{$metaField} ?: optional($item->published_at)->toDateString() ?: 'Available' }}
+                                </div>
+                                @if ($item->file_path)
+                                    <a class="small fw-bold" href="{{ asset('storage/'.$item->file_path) }}" target="_blank" rel="noopener">Open file</a>
+                                @endif
                             </div>
-                            @if ($item->file_path)
-                                <a class="small fw-bold" href="{{ asset('storage/'.$item->file_path) }}" target="_blank" rel="noopener">Open file</a>
-                            @endif
-                        </div>
-                    @empty
-                        <div class="placeholder-media" style="min-height: 10rem;">No {{ strtolower($heading) }} available yet</div>
-                    @endforelse
+                        @empty
+                            <div class="placeholder-media" style="min-height: 10rem;">No {{ strtolower($heading) }} available yet</div>
+                        @endforelse
+                    @else
+                        <div class="placeholder-media" style="min-height: 10rem;">Forge access required</div>
+                    @endif
                 </div>
             </div>
         @endforeach

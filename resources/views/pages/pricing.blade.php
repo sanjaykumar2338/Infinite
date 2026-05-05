@@ -161,6 +161,10 @@
     </style>
 
     <section class="pricing-page">
+        @if (request('checkout') === 'cancelled')
+            <div class="alert alert-warning mb-4">Checkout was cancelled. Your current access has not changed.</div>
+        @endif
+
         <h1 class="pricing-page-title">You&rsquo;re not choosing features.<br>You&rsquo;re choosing certainty.</h1>
 
         <div class="pricing-grid">
@@ -173,7 +177,13 @@
                 <p class="pricing-card-copy">Includes 1 Free Live Call · 30 minutes</p>
                 <p class="pricing-card-copy">Experience real-time guidance before committing.<br>Most people know within one call.</p>
 
-                <a class="pricing-card-action" href="{{ route('signup') }}">Start Spark — See Your first Signal</a>
+                <a class="pricing-card-action" href="{{ route('billing.checkout', 'spark') }}">
+                    @auth
+                        Start Spark — Checkout
+                    @else
+                        Start Spark — Sign in to Checkout
+                    @endauth
+                </a>
             </article>
 
             <article class="pricing-card-large featured">
@@ -190,7 +200,13 @@
                 </ul>
                 <p class="pricing-card-copy">It doesn&rsquo;t add complexity.<br>It removes second-guessing.<br>Decisions get quieter.<br>Timing gets sharper.<br>Results compound.</p>
 
-                <a class="pricing-card-action" href="{{ route('signup') }}">Start Forge — See Your first Signal</a>
+                <a class="pricing-card-action" href="{{ route('billing.checkout', 'forge') }}">
+                    @auth
+                        Start Forge — Checkout
+                    @else
+                        Start Forge — Sign in to Checkout
+                    @endauth
+                </a>
             </article>
         </div>
 

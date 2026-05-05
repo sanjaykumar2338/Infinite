@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\BillingCheckoutController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\UserAuthController;
 use App\Http\Controllers\UserDashboardController;
@@ -22,6 +23,9 @@ Route::get('/signup', [UserAuthController::class, 'create'])->name('signup');
 Route::post('/login/firebase', [UserAuthController::class, 'firebaseSession'])->name('login.firebase');
 Route::post('/logout', [UserAuthController::class, 'destroy'])->middleware('auth')->name('logout');
 Route::get('/dashboard', UserDashboardController::class)->middleware('auth')->name('dashboard');
+Route::get('/billing/checkout/{plan}', BillingCheckoutController::class)
+    ->whereIn('plan', ['spark', 'forge'])
+    ->name('billing.checkout');
 
 Route::get('/adnin', [AuthController::class, 'create'])->name('admin.login');
 Route::post('/adnin', [AuthController::class, 'store'])->name('admin.login.store');

@@ -7,7 +7,10 @@ use App\Models\Report;
 use App\Models\ReportChart;
 use App\Models\User;
 use App\Services\FirebaseAuthService;
+use App\Services\StripeBillingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Stripe\Checkout\Session;
+use Stripe\Exception\InvalidRequestException;
 use Tests\TestCase;
 
 class UserWebAuthTest extends TestCase
@@ -86,6 +89,50 @@ class UserWebAuthTest extends TestCase
             ->assertSee('Monthly Confidence Badge');
     }
 
+    public function test_logged_in_pricing_checkout_redirects_to_stripe(): void
+    {
+        $user = User::factory()->create();
+        $this->fakeStripeCheckout();
+
+        $this->actingAs($user)
+            ->get('/billing/checkout/forge')
+            ->assertRedirect('https://checkout.stripe.test/session');
+    }
+
+    public function test_logged_in_pricing_checkout_shows_message_when_stripe_fails(): void
+    {
+        $user = User::factory()->create();
+        $this->fakeStripeCheckoutFailure();
+
+        $this->actingAs($user)
+            ->get('/billing/checkout/spark')
+            ->assertRedirect(route('pricing'))
+            ->assertSessionHas('error', 'Unable to start Stripe Checkout right now. Please verify the billing price configuration or try again shortly.');
+
+        $this->followingRedirects()
+            ->actingAs($user)
+            ->get('/billing/checkout/spark')
+            ->assertOk()
+            ->assertSee('Unable to start Stripe Checkout right now.');
+    }
+
+    public function test_guest_checkout_resumes_after_firebase_login(): void
+    {
+        $this->get('/billing/checkout/spark')
+            ->assertRedirect('/login')
+            ->assertSessionHas('checkout_plan', 'spark');
+
+        $this->fakeFirebase([
+            'uid' => 'resume-checkout-uid',
+            'email' => 'resume@example.com',
+            'name' => 'Resume Checkout',
+        ]);
+
+        $this->postJson('/login/firebase', ['id_token' => 'valid-token'])
+            ->assertOk()
+            ->assertJsonPath('redirect', route('billing.checkout', 'spark'));
+    }
+
     public function test_user_logout_ends_session(): void
     {
         $user = User::factory()->create();
@@ -111,6 +158,31 @@ class UserWebAuthTest extends TestCase
                     'name' => 'User',
                     'email_verified' => true,
                 ], $this->claims);
+            }
+        });
+    }
+
+    private function fakeStripeCheckout(): void
+    {
+        $this->app->instance(StripeBillingService::class, new class extends StripeBillingService
+        {
+            public function createCheckoutSession(User $user, string $plan): Session
+            {
+                return Session::constructFrom([
+                    'id' => 'cs_test_123',
+                    'url' => 'https://checkout.stripe.test/session',
+                ]);
+            }
+        });
+    }
+
+    private function fakeStripeCheckoutFailure(): void
+    {
+        $this->app->instance(StripeBillingService::class, new class extends StripeBillingService
+        {
+            public function createCheckoutSession(User $user, string $plan): Session
+            {
+                throw InvalidRequestException::factory("No such price: 'prod_bad'", 400);
             }
         });
     }

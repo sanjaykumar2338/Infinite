@@ -5,11 +5,13 @@ namespace Tests\Feature;
 use App\Models\CallSession;
 use App\Models\StripeEvent;
 use App\Models\User;
+use App\Services\AccessService;
 use App\Services\FirebaseAuthService;
 use App\Services\StripeBillingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Stripe\Checkout\Session;
 use Stripe\Event;
+use Stripe\Exception\InvalidRequestException;
 use Tests\TestCase;
 
 class SaasApiTest extends TestCase
@@ -53,6 +55,7 @@ class SaasApiTest extends TestCase
         $this->getJson('/api/access/check', $this->authHeaders())
             ->assertOk()
             ->assertJsonPath('can_use_spark_call', true)
+            ->assertJsonPath('can_use_live_insights', true)
             ->assertJsonPath('can_use_reports', false)
             ->assertJsonPath('remaining_minutes', null);
 
@@ -97,6 +100,17 @@ class SaasApiTest extends TestCase
             ->assertOk()
             ->assertJsonPath('checkout_session_id', 'cs_test_123')
             ->assertJsonPath('url', 'https://checkout.stripe.test/session');
+    }
+
+    public function test_stripe_checkout_api_returns_message_when_stripe_fails(): void
+    {
+        $user = User::factory()->create(['firebase_uid' => 'checkout-failure-uid']);
+        $this->fakeFirebase(['uid' => $user->firebase_uid, 'email' => $user->email]);
+        $this->fakeStripeCheckoutFailure();
+
+        $this->postJson('/api/billing/checkout/spark', [], $this->authHeaders())
+            ->assertStatus(502)
+            ->assertJsonPath('message', 'Unable to start Stripe Checkout right now. Please verify the billing price configuration or try again shortly.');
     }
 
     public function test_stripe_webhook_idempotency(): void
@@ -146,7 +160,13 @@ class SaasApiTest extends TestCase
 
     public function test_payment_failed_marks_past_due(): void
     {
-        $user = User::factory()->create(['status' => 'active', 'stripe_customer_id' => 'cus_failed']);
+        $periodEnd = now()->addWeek();
+        $user = User::factory()->create([
+            'plan' => 'spark',
+            'status' => 'active',
+            'stripe_customer_id' => 'cus_failed',
+            'current_period_end' => $periodEnd,
+        ]);
         $this->fakeStripeWebhook($this->eventPayload('evt_failed', 'invoice.payment_failed', [
             'customer' => 'cus_failed',
         ]));
@@ -154,6 +174,7 @@ class SaasApiTest extends TestCase
         $this->postJson('/api/stripe/webhook', [])->assertOk();
 
         $this->assertDatabaseHas('users', ['id' => $user->id, 'status' => 'past_due']);
+        $this->assertTrue(app(AccessService::class)->check($user->fresh())['can_use_spark_call']);
     }
 
     public function test_subscription_deleted_keeps_access_until_period_end(): void
@@ -172,6 +193,32 @@ class SaasApiTest extends TestCase
         $this->postJson('/api/stripe/webhook', [])->assertOk();
 
         $this->assertDatabaseHas('users', ['id' => $user->id, 'plan' => 'forge', 'status' => 'cancelled']);
+        $this->assertTrue(app(AccessService::class)->check($user->fresh())['can_use_reports']);
+    }
+
+    public function test_subscription_created_maps_price_to_plan(): void
+    {
+        config(['services.stripe.prices.spark' => 'price_spark']);
+        $user = User::factory()->create(['plan' => 'free', 'status' => 'free']);
+
+        $this->fakeStripeWebhook($this->eventPayload('evt_sub_created', 'customer.subscription.created', [
+            'id' => 'sub_created',
+            'customer' => 'cus_created',
+            'status' => 'active',
+            'current_period_end' => now()->addMonth()->timestamp,
+            'metadata' => ['user_id' => (string) $user->id],
+            'items' => ['data' => [['price' => ['id' => 'price_spark']]]],
+        ]));
+
+        $this->postJson('/api/stripe/webhook', [])->assertOk();
+
+        $this->assertDatabaseHas('users', [
+            'id' => $user->id,
+            'plan' => 'spark',
+            'status' => 'active',
+            'stripe_customer_id' => 'cus_created',
+            'stripe_subscription_id' => 'sub_created',
+        ]);
     }
 
     public function test_admin_tester_gets_full_access(): void
@@ -186,9 +233,113 @@ class SaasApiTest extends TestCase
             ->assertJsonPath('remaining_minutes', null);
     }
 
+    public function test_analyze_requires_firebase_authentication(): void
+    {
+        $this->postJson('/api/analyze', $this->analyzePayload())
+            ->assertUnauthorized()
+            ->assertJsonPath('message', 'Missing bearer token.');
+    }
+
+    public function test_analyze_allows_limited_free_trial_access(): void
+    {
+        $free = User::factory()->create([
+            'firebase_uid' => 'free-analyze-uid',
+            'plan' => 'free',
+            'status' => 'free',
+            'call_minutes_used' => 0,
+        ]);
+        $this->fakeFirebase(['uid' => $free->firebase_uid, 'email' => $free->email]);
+
+        $this->postJson('/api/analyze', $this->analyzePayload(), $this->authHeaders())
+            ->assertOk()
+            ->assertJsonPath('type', 'mock')
+            ->assertJsonPath('signal', 'rapport')
+            ->assertJsonPath('confidence', 0.72)
+            ->assertJsonPath('features.live_guidance', true)
+            ->assertJsonPath('features.advanced_reports', false)
+            ->assertJsonStructure([
+                'suggestion',
+                'timestamp',
+                'messages' => ['red', 'green', 'yellow', 'blue'],
+                'nose_position',
+                'access',
+            ]);
+    }
+
+    public function test_analyze_blocks_free_users_after_trial_limit(): void
+    {
+        $free = User::factory()->create([
+            'firebase_uid' => 'free-blocked-analyze-uid',
+            'plan' => 'free',
+            'status' => 'free',
+            'call_minutes_used' => AccessService::FREE_TRIAL_MINUTES,
+            'free_call_used' => true,
+        ]);
+        $this->fakeFirebase(['uid' => $free->firebase_uid, 'email' => $free->email]);
+
+        $this->postJson('/api/analyze', $this->analyzePayload(), $this->authHeaders())
+            ->assertForbidden()
+            ->assertJsonPath('message', 'Upgrade required for live guidance.')
+            ->assertJsonPath('access.remaining_minutes', 0);
+    }
+
+    public function test_analyze_allows_spark_users(): void
+    {
+        $spark = User::factory()->create([
+            'firebase_uid' => 'spark-analyze-uid',
+            'plan' => 'spark',
+            'status' => 'active',
+        ]);
+        $this->fakeFirebase(['uid' => $spark->firebase_uid, 'email' => $spark->email]);
+
+        $this->postJson('/api/analyze', $this->analyzePayload(['mode' => 2]), $this->authHeaders())
+            ->assertOk()
+            ->assertJsonPath('signal', 'attention')
+            ->assertJsonPath('features.live_guidance', true)
+            ->assertJsonPath('features.advanced_reports', false);
+    }
+
+    public function test_analyze_allows_forge_users_with_advanced_features(): void
+    {
+        $forge = User::factory()->create([
+            'firebase_uid' => 'forge-analyze-uid',
+            'plan' => 'forge',
+            'status' => 'active',
+        ]);
+        $this->fakeFirebase(['uid' => $forge->firebase_uid, 'email' => $forge->email]);
+
+        $this->postJson('/api/analyze', $this->analyzePayload(), $this->authHeaders())
+            ->assertOk()
+            ->assertJsonPath('features.live_guidance', true)
+            ->assertJsonPath('features.advanced_reports', true)
+            ->assertJsonPath('access.can_use_reports', true);
+    }
+
+    public function test_analyze_validates_extension_payload(): void
+    {
+        $spark = User::factory()->create([
+            'firebase_uid' => 'invalid-analyze-uid',
+            'plan' => 'spark',
+            'status' => 'active',
+        ]);
+        $this->fakeFirebase(['uid' => $spark->firebase_uid, 'email' => $spark->email]);
+
+        $this->postJson('/api/analyze', ['image' => 'not-an-image'], $this->authHeaders())
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['image']);
+    }
+
     private function authHeaders(): array
     {
         return ['Authorization' => 'Bearer firebase-token'];
+    }
+
+    private function analyzePayload(array $overrides = []): array
+    {
+        return array_merge([
+            'image' => 'data:image/png;base64,'.base64_encode('fake image'),
+            'mode' => 1,
+        ], $overrides);
     }
 
     private function fakeFirebase(array $claims): void
@@ -219,6 +370,17 @@ class SaasApiTest extends TestCase
                     'id' => 'cs_test_123',
                     'url' => 'https://checkout.stripe.test/session',
                 ]);
+            }
+        });
+    }
+
+    private function fakeStripeCheckoutFailure(): void
+    {
+        $this->app->instance(StripeBillingService::class, new class extends StripeBillingService
+        {
+            public function createCheckoutSession(User $user, string $plan): Session
+            {
+                throw InvalidRequestException::factory("No such price: 'prod_bad'", 400);
             }
         });
     }

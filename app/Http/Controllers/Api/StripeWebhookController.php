@@ -8,6 +8,7 @@ use App\Services\StripeWebhookService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Stripe\Exception\SignatureVerificationException;
+use UnexpectedValueException;
 
 class StripeWebhookController extends Controller
 {
@@ -15,7 +16,7 @@ class StripeWebhookController extends Controller
     {
         try {
             $event = $billing->constructWebhookEvent($request->getContent(), $request->header('Stripe-Signature'));
-        } catch (SignatureVerificationException) {
+        } catch (SignatureVerificationException|UnexpectedValueException) {
             return response()->json(['message' => 'Invalid Stripe signature.'], 400);
         }
 

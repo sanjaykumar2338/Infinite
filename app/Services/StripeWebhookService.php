@@ -34,6 +34,7 @@ class StripeWebhookService
                 'checkout.session.completed' => $this->checkoutCompleted($event->data->object),
                 'invoice.payment_succeeded' => $this->invoicePaymentSucceeded($event->data->object),
                 'invoice.payment_failed' => $this->invoicePaymentFailed($event->data->object),
+                'customer.subscription.created' => $this->subscriptionUpdated($event->data->object),
                 'customer.subscription.updated' => $this->subscriptionUpdated($event->data->object),
                 'customer.subscription.deleted' => $this->subscriptionDeleted($event->data->object),
                 default => null,
@@ -57,7 +58,9 @@ class StripeWebhookService
             return;
         }
 
-        $plan = $session->metadata->plan ?? $user->plan;
+        $plan = $session->metadata->plan
+            ?? $this->planFromSession($session)
+            ?? $user->plan;
 
         $user->update([
             'plan' => in_array($plan, ['spark', 'forge'], true) ? $plan : $user->plan,
@@ -77,6 +80,8 @@ class StripeWebhookService
 
         $user->update([
             'status' => 'active',
+            'stripe_customer_id' => $invoice->customer ?? $user->stripe_customer_id,
+            'stripe_subscription_id' => $invoice->subscription ?? $user->stripe_subscription_id,
             'current_period_end' => $this->periodEndFromInvoice($invoice) ?? $user->current_period_end,
         ]);
     }
@@ -125,6 +130,8 @@ class StripeWebhookService
         $user->update([
             'status' => 'cancelled',
             'current_period_end' => $periodEnd,
+            'stripe_customer_id' => $subscription->customer ?? $user->stripe_customer_id,
+            'stripe_subscription_id' => $subscription->id ?? $user->stripe_subscription_id,
             'plan' => $periodEnd && $periodEnd->isFuture() ? $user->plan : 'free',
         ]);
     }
@@ -151,5 +158,10 @@ class StripeWebhookService
     private function periodEndFromInvoice(object $invoice): ?Carbon
     {
         return $this->fromTimestamp($invoice->lines->data[0]->period->end ?? null);
+    }
+
+    private function planFromSession(object $session): ?string
+    {
+        return $this->billing->planFromPrice($session->line_items->data[0]->price->id ?? null);
     }
 }
