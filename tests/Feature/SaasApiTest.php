@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\CallSession;
+use App\Models\Report;
+use App\Models\ReportChart;
 use App\Models\StripeEvent;
 use App\Models\User;
 use App\Services\AccessService;
@@ -350,6 +352,51 @@ class SaasApiTest extends TestCase
             ->assertJsonValidationErrors(['image']);
     }
 
+    public function test_forge_user_can_sync_meeting_report_and_chart(): void
+    {
+        $forge = User::factory()->create([
+            'firebase_uid' => 'forge-report-uid',
+            'plan' => 'forge',
+            'status' => 'active',
+        ]);
+        $this->fakeFirebase(['uid' => $forge->firebase_uid, 'email' => $forge->email]);
+
+        $this->postJson('/api/meetings/finalize', $this->meetingFinalizePayload(), $this->authHeaders())
+            ->assertOk()
+            ->assertJsonPath('message', 'Meeting report synced.')
+            ->assertJsonStructure(['report_id', 'chart_id']);
+
+        $this->assertSame(1, Report::count());
+        $this->assertSame(1, ReportChart::count());
+        $this->assertDatabaseHas('reports', [
+            'user_id' => $forge->id,
+            'title' => 'Meeting zoom-123 Summary',
+        ]);
+        $this->assertDatabaseHas('report_charts', [
+            'user_id' => $forge->id,
+            'title' => 'Meeting zoom-123 Guidance Signals',
+            'chart_type' => 'meeting',
+        ]);
+        $this->assertSame(2, ReportChart::first()->data['counts']['green']);
+    }
+
+    public function test_spark_user_cannot_sync_meeting_report_and_chart(): void
+    {
+        $spark = User::factory()->create([
+            'firebase_uid' => 'spark-report-uid',
+            'plan' => 'spark',
+            'status' => 'active',
+        ]);
+        $this->fakeFirebase(['uid' => $spark->firebase_uid, 'email' => $spark->email]);
+
+        $this->postJson('/api/meetings/finalize', $this->meetingFinalizePayload(), $this->authHeaders())
+            ->assertForbidden()
+            ->assertJsonPath('message', 'Forge access required for report sync.');
+
+        $this->assertSame(0, Report::count());
+        $this->assertSame(0, ReportChart::count());
+    }
+
     private function authHeaders(): array
     {
         return ['Authorization' => 'Bearer firebase-token'];
@@ -360,6 +407,44 @@ class SaasApiTest extends TestCase
         return array_merge([
             'image' => 'data:image/png;base64,'.base64_encode('fake image'),
             'mode' => 1,
+        ], $overrides);
+    }
+
+    private function meetingFinalizePayload(array $overrides = []): array
+    {
+        return array_replace_recursive([
+            'meeting_id' => 'zoom-123',
+            'session_id' => 'session-123',
+            'started_at' => '2026-05-05T10:00:00.000Z',
+            'ended_at' => '2026-05-05T10:30:00.000Z',
+            'summary' => [
+                'counts' => [
+                    'red' => 1,
+                    'yellow' => 0,
+                    'blue' => 1,
+                    'green' => 2,
+                ],
+                'lastMessages' => [
+                    [
+                        'analysis' => 'Stay centered and keep your next prompt concise.',
+                        'timestamp' => '2026-05-05T10:29:00.000Z',
+                        'color' => 'green',
+                    ],
+                ],
+            ],
+            'report_data' => [
+                'daily_data' => [
+                    [
+                        'date' => '2026-05-05',
+                        'color_counts' => [
+                            'red' => 1,
+                            'yellow' => 0,
+                            'blue' => 1,
+                            'green' => 2,
+                        ],
+                    ],
+                ],
+            ],
         ], $overrides);
     }
 
