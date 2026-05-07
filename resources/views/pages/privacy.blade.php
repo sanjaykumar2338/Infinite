@@ -1,8 +1,22 @@
 <x-layouts.app title="Privacy Policy | infinitesugar">
-    <section class="surface-card p-4 p-lg-5">
-        <div class="eyebrow mb-3">Privacy Policy</div>
-        <h1 class="section-title mb-3">Privacy Policy</h1>
-        <p class="lead-copy mb-0">Effective Date: 2025</p>
+    <section class="legal-hero">
+        <div class="legal-hero-grid">
+            <div class="legal-hero-copy">
+                <div class="eyebrow">Privacy Policy</div>
+                <h1 class="legal-hero-title">Privacy Policy</h1>
+                <p class="legal-hero-summary">Infinite Sugar is built around private, local behavioral insights during Zoom calls. This page explains what information we collect, what stays on your device, and how we protect your account data.</p>
+            </div>
+            <div class="legal-hero-meta">
+                <div class="legal-meta-card">
+                    <span class="legal-meta-label">Effective Date</span>
+                    <span class="legal-meta-value">2025</span>
+                </div>
+                <div class="legal-meta-card">
+                    <span class="legal-meta-label">Focus</span>
+                    <span class="legal-meta-value">Private local processing</span>
+                </div>
+            </div>
+        </div>
     </section>
 
     <section class="legal-doc py-5 mx-auto">

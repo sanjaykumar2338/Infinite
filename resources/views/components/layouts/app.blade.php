@@ -510,6 +510,77 @@
             line-height: 1.78;
         }
 
+        .legal-hero {
+            max-width: 980px;
+            margin-inline: auto;
+            padding: clamp(1.5rem, 3vw, 2rem);
+            border: 1px solid rgba(95, 60, 24, .12);
+            border-radius: 1.1rem;
+            background: rgba(255, 253, 248, .88);
+            box-shadow: 0 16px 34px rgba(95, 60, 24, .05);
+        }
+
+        .legal-hero-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .legal-hero-copy .eyebrow {
+            margin-bottom: .85rem;
+        }
+
+        .legal-hero-title {
+            margin: 0;
+            color: var(--is-ink);
+            font-family: "Playfair Display", Georgia, serif;
+            font-size: clamp(2.5rem, 4.5vw, 4rem);
+            font-weight: 600;
+            line-height: 1;
+        }
+
+        .legal-hero-summary {
+            max-width: 42rem;
+            margin: .85rem 0 0;
+            color: var(--is-muted);
+            font-size: 1rem;
+            line-height: 1.65;
+        }
+
+        .legal-hero-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .75rem;
+            align-items: center;
+        }
+
+        .legal-meta-card {
+            width: auto;
+            padding: .75rem .95rem;
+            border: 1px solid rgba(95, 60, 24, .12);
+            border-radius: 999px;
+            background: #fffdf8;
+        }
+
+        .legal-meta-label {
+            display: inline;
+            margin-bottom: 0;
+            color: var(--is-brown-soft);
+            font-size: .72rem;
+            font-weight: 800;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+        }
+
+        .legal-meta-value {
+            margin-left: .45rem;
+            color: var(--is-brown);
+            font-family: Inter, Arial, sans-serif;
+            font-size: .94rem;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
         .legal-doc h2 {
             margin-top: 2.1rem;
             color: var(--is-brown);
@@ -568,6 +639,10 @@
             .home-hero-media .hero-video {
                 max-width: none;
             }
+
+            .legal-hero-meta {
+                align-items: stretch;
+            }
         }
 
         @media (max-width: 575.98px) {
@@ -589,6 +664,29 @@
 
             .pricing-plan-price {
                 margin-top: .6rem;
+            }
+
+            .legal-hero {
+                padding: 1.25rem;
+            }
+
+            .legal-hero-summary {
+                line-height: 1.6;
+            }
+
+            .legal-meta-card {
+                width: 100%;
+                border-radius: .85rem;
+            }
+
+            .legal-meta-label,
+            .legal-meta-value {
+                display: block;
+                margin-left: 0;
+            }
+
+            .legal-meta-value {
+                margin-top: .25rem;
             }
         }
     </style>

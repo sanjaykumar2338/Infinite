@@ -1,8 +1,22 @@
 <x-layouts.app title="Terms & Conditions | infinitesugar">
-    <section class="surface-card p-4 p-lg-5">
-        <div class="eyebrow mb-3">Terms & Conditions</div>
-        <h1 class="section-title mb-3">Terms and Conditions</h1>
-        <p class="lead-copy mb-0">Last Updated: 2025</p>
+    <section class="legal-hero">
+        <div class="legal-hero-grid">
+            <div class="legal-hero-copy">
+                <div class="eyebrow">Terms & Conditions</div>
+                <h1 class="legal-hero-title">Terms and Conditions</h1>
+                <p class="legal-hero-summary">These terms cover how Infinite Sugar works, how subscriptions are handled, and the rules for using the website and Chrome extension in a clear, straightforward way.</p>
+            </div>
+            <div class="legal-hero-meta">
+                <div class="legal-meta-card">
+                    <span class="legal-meta-label">Last Updated</span>
+                    <span class="legal-meta-value">2025</span>
+                </div>
+                <div class="legal-meta-card">
+                    <span class="legal-meta-label">Applies To</span>
+                    <span class="legal-meta-value">Website and extension</span>
+                </div>
+            </div>
+        </div>
     </section>
 
     <section class="legal-doc py-5 mx-auto">

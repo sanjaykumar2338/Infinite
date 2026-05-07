@@ -8,6 +8,7 @@ use App\Http\Controllers\BillingCheckoutController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\UserAuthController;
 use App\Http\Controllers\UserDashboardController;
+use App\Http\Controllers\UserReportController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [PageController::class, 'show'])->defaults('page', 'home')->name('home');
@@ -23,6 +24,9 @@ Route::get('/signup', [UserAuthController::class, 'create'])->name('signup');
 Route::post('/login/firebase', [UserAuthController::class, 'firebaseSession'])->name('login.firebase');
 Route::post('/logout', [UserAuthController::class, 'destroy'])->middleware('auth')->name('logout');
 Route::get('/dashboard', UserDashboardController::class)->middleware('auth')->name('dashboard');
+Route::get('/dashboard/reports/{report}', [UserReportController::class, 'show'])
+    ->middleware('auth')
+    ->name('dashboard.reports.show');
 Route::get('/extension/download', function () {
     $archive = public_path('downloads/infinite-sugar-extension.zip');
 

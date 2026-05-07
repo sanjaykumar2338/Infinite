@@ -8,6 +8,7 @@ use App\Models\ReportChart;
 use App\Models\User;
 use App\Services\FirebaseAuthService;
 use App\Services\StripeBillingService;
+use App\Support\ForgeSundayWeeklyBrief;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Stripe\Checkout\Session;
 use Stripe\Exception\InvalidRequestException;
@@ -89,6 +90,100 @@ class UserWebAuthTest extends TestCase
             ->assertSee('Monthly Confidence Badge')
             ->assertSee('Install Extension')
             ->assertSee('Logout');
+    }
+
+    public function test_free_user_cannot_access_forge_sunday_report(): void
+    {
+        $user = User::factory()->create([
+            'plan' => 'free',
+            'status' => 'free',
+        ]);
+
+        $report = Report::create([
+            'user_id' => $user->id,
+            'title' => 'FORGE — Weekly Brief',
+            'report_type' => ForgeSundayWeeklyBrief::REPORT_TYPE,
+            'report_data' => ForgeSundayWeeklyBrief::sample(),
+            'published_at' => now(),
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('dashboard.reports.show', $report))
+            ->assertForbidden();
+    }
+
+    public function test_spark_user_cannot_access_forge_sunday_report(): void
+    {
+        $user = User::factory()->create([
+            'plan' => 'spark',
+            'status' => 'active',
+        ]);
+
+        $report = Report::create([
+            'user_id' => $user->id,
+            'title' => 'FORGE — Weekly Brief',
+            'report_type' => ForgeSundayWeeklyBrief::REPORT_TYPE,
+            'report_data' => ForgeSundayWeeklyBrief::sample(),
+            'published_at' => now(),
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('dashboard.reports.show', $report))
+            ->assertForbidden();
+    }
+
+    public function test_forge_user_can_view_forge_sunday_report(): void
+    {
+        $user = User::factory()->create([
+            'plan' => 'forge',
+            'status' => 'active',
+        ]);
+
+        $payload = ForgeSundayWeeklyBrief::sample();
+
+        $report = Report::create([
+            'user_id' => $user->id,
+            'title' => 'FORGE — Weekly Brief',
+            'report_type' => ForgeSundayWeeklyBrief::REPORT_TYPE,
+            'report_data' => $payload,
+            'period_end' => now()->endOfWeek()->toDateString(),
+            'published_at' => now(),
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('dashboard.reports.show', $report))
+            ->assertOk()
+            ->assertSee('FORGE — Weekly Brief')
+            ->assertSee($payload['meta']['prepared_time'])
+            ->assertSee($payload['executive_verdict']['headline'])
+            ->assertSee($payload['business_translation_layer']['objection_handling'])
+            ->assertSee($payload['next_week_focus']['text']);
+    }
+
+    public function test_forge_sunday_report_missing_fields_fails_safely(): void
+    {
+        $user = User::factory()->create([
+            'plan' => 'forge',
+            'status' => 'active',
+        ]);
+
+        $report = Report::create([
+            'user_id' => $user->id,
+            'title' => 'FORGE — Weekly Brief',
+            'report_type' => ForgeSundayWeeklyBrief::REPORT_TYPE,
+            'report_data' => [
+                'meta' => [
+                    'prepared_time' => 'Sunday 9:00 PM',
+                ],
+            ],
+            'published_at' => now(),
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('dashboard.reports.show', $report))
+            ->assertOk()
+            ->assertSee('Forge Sunday report unavailable')
+            ->assertSee('meta.system');
     }
 
     public function test_signed_in_home_install_button_downloads_extension(): void

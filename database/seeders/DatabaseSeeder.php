@@ -28,5 +28,9 @@ class DatabaseSeeder extends Seeder
                 ]
             );
         }
+
+        if (env('SEED_FORGE_PREVIEW_REPORT')) {
+            $this->call(ForgeSundayReportPreviewSeeder::class);
+        }
     }
 }

@@ -51,6 +51,13 @@
                     <label class="form-label fw-bold">Title</label>
                     <input class="form-control" name="title" required>
                 </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Report Format</label>
+                    <select class="form-select" name="report_type">
+                        <option value="standard">Standard report</option>
+                        <option value="forge_sunday_weekly_brief">Forge Sunday 9PM brief</option>
+                    </select>
+                </div>
                 <div class="col-md-2">
                     <label class="form-label fw-bold">Period Start</label>
                     <input class="form-control" name="period_start" type="date">
@@ -74,6 +81,11 @@
                 <div class="col-12">
                     <label class="form-label fw-bold">Summary</label>
                     <textarea class="form-control" name="summary" rows="2"></textarea>
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-bold">Forge Sunday Report JSON</label>
+                    <textarea class="form-control font-monospace" name="report_json" rows="12" placeholder='{"meta":{"prepared_time":"Sunday 9:00 PM","system":"Infinite Sugar"}}'></textarea>
+                    <div class="form-text">Use this only for the fixed Forge Sunday 9PM executive report structure.</div>
                 </div>
                 <div class="col-12">
                     <button class="btn btn-admin px-4">Upload Asset</button>
@@ -101,6 +113,9 @@
                                 <div class="fw-bold">{{ $item->title }}</div>
                                 @if (! empty($item->summary))
                                     <div class="small text-muted text-truncate" style="max-width: 24rem;">{{ $item->summary }}</div>
+                                @endif
+                                @if (($item->report_type ?? 'standard') !== 'standard')
+                                    <div class="small text-muted">{{ $item->report_type }}</div>
                                 @endif
                             </td>
                             <td><span class="admin-pill pill-user">{{ $item->user->email }}</span></td>

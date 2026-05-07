@@ -7,9 +7,11 @@ use App\Models\BadgeReport;
 use App\Models\Report;
 use App\Models\ReportChart;
 use App\Models\User;
+use App\Support\ForgeSundayWeeklyBrief;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class ReportController extends Controller
@@ -31,6 +33,8 @@ class ReportController extends Controller
             'user_id' => ['required', 'exists:users,id'],
             'title' => ['required', 'string', 'max:255'],
             'summary' => ['nullable', 'string'],
+            'report_type' => ['nullable', 'string', 'in:standard,'.ForgeSundayWeeklyBrief::REPORT_TYPE],
+            'report_json' => ['nullable', 'string'],
             'period_start' => ['nullable', 'date'],
             'period_end' => ['nullable', 'date'],
             'badge_name' => ['nullable', 'string', 'max:255'],
@@ -39,9 +43,10 @@ class ReportController extends Controller
         ]);
 
         $path = $request->file('file')?->store('reports', 'public');
+        $reportPayload = $this->reportPayload($data);
 
         match ($data['type']) {
-            'report' => Report::create($this->reportData($data, $path)),
+            'report' => Report::create($this->reportData($data, $path, $reportPayload)),
             'chart' => ReportChart::create($this->chartData($data, $path)),
             'badge' => BadgeReport::create($this->badgeData($data, $path)),
         };
@@ -67,12 +72,14 @@ class ReportController extends Controller
         return back()->with('status', 'Report asset deleted.');
     }
 
-    private function reportData(array $data, ?string $path): array
+    private function reportData(array $data, ?string $path, ?array $reportPayload): array
     {
         return [
             'user_id' => $data['user_id'],
             'title' => $data['title'],
-            'summary' => $data['summary'] ?? null,
+            'report_type' => $data['report_type'] ?? 'standard',
+            'summary' => $data['summary'] ?? data_get($reportPayload, 'executive_summary.text'),
+            'report_data' => $reportPayload,
             'file_path' => $path,
             'period_start' => $data['period_start'] ?? null,
             'period_end' => $data['period_end'] ?? null,
@@ -104,5 +111,37 @@ class ReportController extends Controller
             'month' => $data['period_start'] ?? null,
             'published_at' => now(),
         ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    private function reportPayload(array $data): ?array
+    {
+        if (($data['type'] ?? null) !== 'report') {
+            return null;
+        }
+
+        if (($data['report_type'] ?? 'standard') !== ForgeSundayWeeklyBrief::REPORT_TYPE) {
+            return null;
+        }
+
+        $decoded = json_decode((string) ($data['report_json'] ?? ''), true);
+
+        if (! is_array($decoded)) {
+            throw ValidationException::withMessages([
+                'report_json' => 'Forge Sunday report JSON must be valid JSON.',
+            ]);
+        }
+
+        $validation = ForgeSundayWeeklyBrief::inspect($decoded);
+
+        if (! $validation['valid']) {
+            throw ValidationException::withMessages([
+                'report_json' => 'Forge Sunday report JSON is missing required fields: '.implode(', ', $validation['missing']),
+            ]);
+        }
+
+        return $decoded;
     }
 }

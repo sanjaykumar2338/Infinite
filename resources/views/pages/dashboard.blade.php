@@ -104,7 +104,9 @@
                                 <div class="small text-muted">
                                     {{ $item->{$metaField} ?: optional($item->published_at)->toDateString() ?: 'Available' }}
                                 </div>
-                                @if ($item->file_path)
+                                @if (method_exists($item, 'isForgeSundayWeeklyBrief') && $item->isForgeSundayWeeklyBrief())
+                                    <a class="small fw-bold" href="{{ route('dashboard.reports.show', $item) }}">Open report</a>
+                                @elseif ($item->file_path)
                                     <a class="small fw-bold" href="{{ asset('storage/'.$item->file_path) }}" target="_blank" rel="noopener">Open file</a>
                                 @endif
                             </div>
