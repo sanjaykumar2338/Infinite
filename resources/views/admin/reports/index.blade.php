@@ -122,6 +122,9 @@
                             <td>{{ optional($item->period_start ?? $item->month)->toDateString() }} {{ optional($item->period_end)->toDateString() }}</td>
                             <td><code>{{ $item->file_path ?: 'n/a' }}</code></td>
                             <td class="text-end">
+                                @if ($type === 'report' && ($item->report_type ?? 'standard') === 'forge_sunday_weekly_brief')
+                                    <a class="btn btn-sm btn-outline-secondary rounded-pill px-3 me-2" href="{{ route('dashboard.reports.show', $item) }}">Preview</a>
+                                @endif
                                 <form method="post" action="{{ route('admin.reports.destroy', [$type, $item->id]) }}">
                                     @csrf
                                     @method('delete')
