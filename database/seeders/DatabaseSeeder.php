@@ -16,18 +16,18 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        if ($email = env('ADMIN_EMAIL')) {
-            User::updateOrCreate(
-                ['email' => $email],
-                [
-                    'name' => env('ADMIN_NAME', 'Infinite Sugar Admin'),
-                    'password' => Hash::make(env('ADMIN_PASSWORD', 'password')),
-                    'plan' => 'forge',
-                    'status' => 'active',
-                    'role' => 'admin',
-                ]
-            );
-        }
+        $email = env('ADMIN_EMAIL', 'admin@infinitesugar.local');
+
+        User::updateOrCreate(
+            ['email' => $email],
+            [
+                'name' => env('ADMIN_NAME', 'Infinite Sugar Admin'),
+                'password' => Hash::make(env('ADMIN_PASSWORD', 'admin12345')),
+                'plan' => 'forge',
+                'status' => 'active',
+                'role' => 'admin',
+            ]
+        );
 
         if (env('SEED_FORGE_PREVIEW_REPORT')) {
             $this->call(ForgeSundayReportPreviewSeeder::class);
