@@ -106,6 +106,12 @@
                                 </div>
                                 @if (method_exists($item, 'isForgeSundayWeeklyBrief') && $item->isForgeSundayWeeklyBrief())
                                     <a class="small fw-bold" href="{{ route('dashboard.reports.show', $item) }}">Open report</a>
+                                @elseif (method_exists($item, 'isForgeWeeklyTimeline') && $item->isForgeWeeklyTimeline())
+                                    <a class="small fw-bold" href="{{ route('dashboard.charts.show', $item) }}">Open report</a>
+                                @elseif (method_exists($item, 'isForgeWeeklyHeatmap') && $item->isForgeWeeklyHeatmap())
+                                    <a class="small fw-bold" href="{{ route('dashboard.charts.show', $item) }}">Open report</a>
+                                @elseif (method_exists($item, 'isForgeMonthlyBadge') && $item->isForgeMonthlyBadge())
+                                    <a class="small fw-bold" href="{{ route('dashboard.badges.show', $item) }}">Open report</a>
                                 @elseif ($item->file_path)
                                     <a class="small fw-bold" href="{{ asset('storage/'.$item->file_path) }}" target="_blank" rel="noopener">Open file</a>
                                 @endif

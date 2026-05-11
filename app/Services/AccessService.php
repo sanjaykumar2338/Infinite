@@ -24,6 +24,7 @@ class AccessService
             'can_use_charts' => $fullAccess,
             'can_use_badge_reports' => $fullAccess,
             'can_use_spark_call' => $fullAccess || $paidSparkAccess || $remainingMinutes > 0,
+            'free_call_allowance_minutes' => self::FREE_TRIAL_MINUTES,
             'free_call_used' => $user->free_call_used,
             'call_minutes_used' => $user->call_minutes_used,
             'remaining_minutes' => $user->hasTestingAccess() || $paidSparkAccess || $fullAccess ? null : $remainingMinutes,

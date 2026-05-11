@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\ForgeMonthlyBadgeReport;
 use Illuminate\Database\Eloquent\Model;
 
 class BadgeReport extends Model
@@ -9,7 +10,9 @@ class BadgeReport extends Model
     protected $fillable = [
         'user_id',
         'title',
+        'report_type',
         'summary',
+        'report_data',
         'badge_name',
         'file_path',
         'month',
@@ -21,7 +24,13 @@ class BadgeReport extends Model
         return [
             'month' => 'date',
             'published_at' => 'datetime',
+            'report_data' => 'array',
         ];
+    }
+
+    public function isForgeMonthlyBadge(): bool
+    {
+        return $this->report_type === ForgeMonthlyBadgeReport::REPORT_TYPE;
     }
 
     public function user()

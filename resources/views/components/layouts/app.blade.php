@@ -21,7 +21,7 @@
             --is-cream: #f8f2e4;
             --is-cream-soft: #fcfaf4;
             --is-paper: #fffdf8;
-            --is-nav: #eeeeee;
+            --is-nav: rgba(248, 242, 228, .94);
             --is-ink: #17110c;
             --is-brown: #5f3c18;
             --is-brown-soft: #8b6a3e;
@@ -65,13 +65,14 @@
             position: sticky;
             top: 0;
             z-index: 50;
-            border-bottom: 0;
+            border-bottom: 1px solid rgba(95, 60, 24, .1);
             background: var(--is-nav);
+            backdrop-filter: blur(18px);
         }
 
         .site-nav .container {
-            width: min(76vw, 1500px);
-            min-height: 5.5rem;
+            width: min(82vw, 1420px);
+            min-height: 4.65rem;
             max-width: none;
             padding-inline: 0;
         }
@@ -79,7 +80,7 @@
         .brand-word {
             color: #a8873f;
             font-family: "Playfair Display", Georgia, serif;
-            font-size: clamp(2.35rem, 3vw, 2.8rem);
+            font-size: clamp(2rem, 2.45vw, 2.45rem);
             font-weight: 600;
             line-height: 1;
             padding-block: 0;
@@ -87,9 +88,10 @@
         }
 
         .nav-link {
-            color: rgba(23, 17, 12, .68);
-            font-size: 1.06rem;
-            font-weight: 800;
+            color: rgba(23, 17, 12, .62);
+            font-size: .92rem;
+            font-weight: 750;
+            letter-spacing: .01em;
         }
 
         .nav-link:hover,
@@ -97,8 +99,8 @@
             color: var(--is-brown);
         }
 
-        .nav-link[href$="#faqs"] {
-            color: #806b46;
+        .nav-link[href$="#faq"] {
+            color: #7d6845;
         }
 
         .nav-logout-form {
@@ -112,8 +114,8 @@
             padding: .5rem 0;
             color: rgba(23, 17, 12, .68);
             font: inherit;
-            font-size: 1.06rem;
-            font-weight: 800;
+            font-size: .92rem;
+            font-weight: 750;
         }
 
         .nav-logout-button:hover {
@@ -123,7 +125,7 @@
         .site-nav .navbar-nav {
             flex-direction: row;
             flex-wrap: wrap;
-            gap: .15rem 1.55rem;
+            gap: .15rem 1.18rem;
             justify-content: flex-end;
         }
 
@@ -698,10 +700,12 @@
                 <a class="navbar-brand brand-word" href="{{ route('home') }}">infinitesugar</a>
                 <div class="navbar-nav ms-auto align-items-center">
                     <a class="nav-link" href="{{ route('home') }}#top">Home</a>
-                    <a class="nav-link" href="{{ route('home') }}#forge">Forge</a>
                     <a class="nav-link" href="{{ route('home') }}#spark">Spark</a>
+                    <a class="nav-link" href="{{ route('home') }}#forge">Forge</a>
+                    <a class="nav-link" href="{{ route('home') }}#intelligence">Intelligence</a>
+                    <a class="nav-link" href="{{ route('home') }}#executive-briefings">Executive Briefings</a>
                     <a class="nav-link" href="{{ route('home') }}#pricing">Pricing</a>
-                    <a class="nav-link" href="{{ route('home') }}#faqs">FAQs</a>
+                    <a class="nav-link" href="{{ route('home') }}#faq">FAQ</a>
                     @auth
                         <a class="nav-link" href="{{ route('dashboard') }}">Dashboard</a>
                         <a class="nav-link" href="{{ route('extension.download') }}">Install Extension</a>

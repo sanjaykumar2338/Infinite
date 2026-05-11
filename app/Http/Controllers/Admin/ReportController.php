@@ -7,7 +7,10 @@ use App\Models\BadgeReport;
 use App\Models\Report;
 use App\Models\ReportChart;
 use App\Models\User;
+use App\Support\ForgeMonthlyBadgeReport;
 use App\Support\ForgeSundayWeeklyBrief;
+use App\Support\ForgeWeeklyHeatmap;
+use App\Support\ForgeWeeklyTimeline;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -33,7 +36,12 @@ class ReportController extends Controller
             'user_id' => ['required', 'exists:users,id'],
             'title' => ['required', 'string', 'max:255'],
             'summary' => ['nullable', 'string'],
-            'report_type' => ['nullable', 'string', 'in:standard,'.ForgeSundayWeeklyBrief::REPORT_TYPE],
+            'report_type' => ['nullable', 'string', 'in:standard,'.implode(',', [
+                ForgeSundayWeeklyBrief::REPORT_TYPE,
+                ForgeWeeklyHeatmap::REPORT_TYPE,
+                ForgeWeeklyTimeline::REPORT_TYPE,
+                ForgeMonthlyBadgeReport::REPORT_TYPE,
+            ])],
             'report_json' => ['nullable', 'string'],
             'period_start' => ['nullable', 'date'],
             'period_end' => ['nullable', 'date'],
@@ -43,12 +51,12 @@ class ReportController extends Controller
         ]);
 
         $path = $request->file('file')?->store('reports', 'public');
-        $reportPayload = $this->reportPayload($data);
+        $payload = $this->structuredPayload($data);
 
         match ($data['type']) {
-            'report' => Report::create($this->reportData($data, $path, $reportPayload)),
-            'chart' => ReportChart::create($this->chartData($data, $path)),
-            'badge' => BadgeReport::create($this->badgeData($data, $path)),
+            'report' => Report::create($this->reportData($data, $path, $payload)),
+            'chart' => ReportChart::create($this->chartData($data, $path, $payload)),
+            'badge' => BadgeReport::create($this->badgeData($data, $path, $payload)),
         };
 
         return back()->with('status', 'Report asset saved.');
@@ -87,12 +95,14 @@ class ReportController extends Controller
         ];
     }
 
-    private function chartData(array $data, ?string $path): array
+    private function chartData(array $data, ?string $path, ?array $payload): array
     {
         return [
             'user_id' => $data['user_id'],
             'title' => $data['title'],
-            'chart_type' => $data['chart_type'] ?? 'weekly',
+            'report_type' => $data['report_type'] ?? 'standard',
+            'chart_type' => $data['chart_type'] ?? ($this->isTimeline($data) ? 'timeline' : ($this->isHeatmap($data) ? 'heatmap' : 'weekly')),
+            'data' => $payload,
             'file_path' => $path,
             'period_start' => $data['period_start'] ?? null,
             'period_end' => $data['period_end'] ?? null,
@@ -100,13 +110,15 @@ class ReportController extends Controller
         ];
     }
 
-    private function badgeData(array $data, ?string $path): array
+    private function badgeData(array $data, ?string $path, ?array $payload): array
     {
         return [
             'user_id' => $data['user_id'],
             'title' => $data['title'],
-            'summary' => $data['summary'] ?? null,
-            'badge_name' => $data['badge_name'] ?? null,
+            'report_type' => $data['report_type'] ?? 'standard',
+            'summary' => $data['summary'] ?? data_get($payload, 'executive_summary.headline'),
+            'report_data' => $payload,
+            'badge_name' => $data['badge_name'] ?? data_get($payload, 'badge_name'),
             'file_path' => $path,
             'month' => $data['period_start'] ?? null,
             'published_at' => now(),
@@ -116,13 +128,9 @@ class ReportController extends Controller
     /**
      * @param  array<string, mixed>  $data
      */
-    private function reportPayload(array $data): ?array
+    private function structuredPayload(array $data): ?array
     {
-        if (($data['type'] ?? null) !== 'report') {
-            return null;
-        }
-
-        if (($data['report_type'] ?? 'standard') !== ForgeSundayWeeklyBrief::REPORT_TYPE) {
+        if (($data['report_type'] ?? 'standard') === 'standard') {
             return null;
         }
 
@@ -130,18 +138,50 @@ class ReportController extends Controller
 
         if (! is_array($decoded)) {
             throw ValidationException::withMessages([
-                'report_json' => 'Forge Sunday report JSON must be valid JSON.',
+                'report_json' => 'Structured Forge report JSON must be valid JSON.',
             ]);
         }
 
-        $validation = ForgeSundayWeeklyBrief::inspect($decoded);
+        $validation = match (true) {
+            $this->isSunday($data) => ForgeSundayWeeklyBrief::inspect($decoded),
+            $this->isHeatmap($data) => ForgeWeeklyHeatmap::inspect($decoded),
+            $this->isTimeline($data) => ForgeWeeklyTimeline::inspect($decoded),
+            $this->isMonthlyBadge($data) => ForgeMonthlyBadgeReport::inspect($decoded),
+            default => throw ValidationException::withMessages([
+                'report_type' => 'That report type is not supported for the selected asset category.',
+            ]),
+        };
 
         if (! $validation['valid']) {
             throw ValidationException::withMessages([
-                'report_json' => 'Forge Sunday report JSON is missing required fields: '.implode(', ', $validation['missing']),
+                'report_json' => 'Structured Forge report JSON is missing required fields: '.implode(', ', $validation['missing']),
             ]);
         }
 
-        return $decoded;
+        return $validation['payload'] ?? $decoded;
+    }
+
+    private function isSunday(array $data): bool
+    {
+        return ($data['type'] ?? null) === 'report'
+            && ($data['report_type'] ?? 'standard') === ForgeSundayWeeklyBrief::REPORT_TYPE;
+    }
+
+    private function isTimeline(array $data): bool
+    {
+        return ($data['type'] ?? null) === 'chart'
+            && ($data['report_type'] ?? 'standard') === ForgeWeeklyTimeline::REPORT_TYPE;
+    }
+
+    private function isHeatmap(array $data): bool
+    {
+        return ($data['type'] ?? null) === 'chart'
+            && ($data['report_type'] ?? 'standard') === ForgeWeeklyHeatmap::REPORT_TYPE;
+    }
+
+    private function isMonthlyBadge(array $data): bool
+    {
+        return ($data['type'] ?? null) === 'badge'
+            && ($data['report_type'] ?? 'standard') === ForgeMonthlyBadgeReport::REPORT_TYPE;
     }
 }

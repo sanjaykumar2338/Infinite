@@ -11,7 +11,7 @@
 
     .forge-brief-shell {
         border: 1px solid rgba(95, 60, 24, .12);
-        border-radius: 1rem;
+        border-radius: .5rem;
         background: #fffdf8;
         box-shadow: 0 18px 42px rgba(95, 60, 24, .06);
         overflow: hidden;
@@ -88,7 +88,7 @@
     .forge-brief-card {
         padding: 1rem 1.1rem;
         border: 1px solid rgba(95, 60, 24, .1);
-        border-radius: .9rem;
+        border-radius: .5rem;
         background: rgba(248, 242, 228, .35);
     }
 
@@ -112,19 +112,19 @@
 <div class="forge-brief">
     <div class="forge-brief-shell">
         <header class="forge-brief-header">
-            <h1 class="forge-brief-title">FORGE — Weekly Brief</h1>
+            <h1 class="forge-brief-title">Sunday Night Executive Report</h1>
             <div class="forge-brief-meta">
-                <span>Prepared time: {{ data_get($payload, 'meta.prepared_time') }}</span>
-                <span>System: {{ data_get($payload, 'meta.system') }}</span>
+                <span>{{ data_get($payload, 'meta.prepared_time') }}</span>
+                <span>Prepared by {{ data_get($payload, 'meta.system') }}</span>
                 @if ($report->period_end)
-                    <span>Week ending: {{ $report->period_end->toFormattedDateString() }}</span>
+                    <span>Week ending {{ $report->period_end->toFormattedDateString() }}</span>
                 @endif
             </div>
         </header>
 
         <div class="forge-brief-body">
             <section class="forge-brief-section">
-                <h2 class="forge-brief-heading">Executive Verdict</h2>
+                <h2 class="forge-brief-heading">Deal Momentum Verdict</h2>
                 <p class="forge-brief-verdict">{{ data_get($payload, 'executive_verdict.headline') }}</p>
             </section>
 

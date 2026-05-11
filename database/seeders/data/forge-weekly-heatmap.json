@@ -1,0 +1,37 @@
+{
+  "report_type": "forge_weekly_heatmap",
+  "meta": {
+    "prepared_time": "Sunday 9:00 PM",
+    "system": "Infinite Sugar"
+  },
+  "executive_summary": {
+    "headline": "Your strongest presence arrived when pressure rose, showing a more reliable ability to hold authority without adding noise."
+  },
+  "heatmap": {
+    "days": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    "rows": [
+      {
+        "label": "Composure under pressure",
+        "values": ["soft", "steady", "steady", "strong", "strong", "strong", "earned"]
+      },
+      {
+        "label": "Authority retention",
+        "values": ["steady", "steady", "strong", "strong", "strong", "earned", "earned"]
+      },
+      {
+        "label": "Value clarity",
+        "values": ["soft", "steady", "steady", "steady", "strong", "strong", "earned"]
+      },
+      {
+        "label": "Close readiness",
+        "values": ["soft", "soft", "steady", "steady", "strong", "strong", "strong"]
+      }
+    ]
+  },
+  "strategic_interpretation": {
+    "text": "The week shows a calmer operating baseline. Instead of losing command when the conversation tightened, you protected rhythm and let the room settle around your pace."
+  },
+  "reinforcement": {
+    "text": "Keep rewarding the pause before pressure responses. It is becoming the behavior that turns visible tension into strategic control."
+  }
+}

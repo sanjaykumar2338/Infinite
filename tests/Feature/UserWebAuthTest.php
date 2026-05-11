@@ -8,7 +8,10 @@ use App\Models\ReportChart;
 use App\Models\User;
 use App\Services\FirebaseAuthService;
 use App\Services\StripeBillingService;
+use App\Support\ForgeMonthlyBadgeReport;
 use App\Support\ForgeSundayWeeklyBrief;
+use App\Support\ForgeWeeklyHeatmap;
+use App\Support\ForgeWeeklyTimeline;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Stripe\Checkout\Session;
 use Stripe\Exception\InvalidRequestException;
@@ -92,6 +95,57 @@ class UserWebAuthTest extends TestCase
             ->assertSee('Logout');
     }
 
+    public function test_dashboard_shows_forge_structured_report_links(): void
+    {
+        $user = User::factory()->create([
+            'plan' => 'forge',
+            'status' => 'active',
+        ]);
+
+        $sunday = Report::create([
+            'user_id' => $user->id,
+            'title' => 'FORGE — Weekly Brief',
+            'report_type' => ForgeSundayWeeklyBrief::REPORT_TYPE,
+            'report_data' => ForgeSundayWeeklyBrief::sample(),
+            'published_at' => now(),
+        ]);
+
+        $timeline = ReportChart::create([
+            'user_id' => $user->id,
+            'title' => 'FORGE Weekly Strategic Timeline',
+            'report_type' => ForgeWeeklyTimeline::REPORT_TYPE,
+            'chart_type' => 'timeline',
+            'data' => ForgeWeeklyTimeline::sample(),
+            'published_at' => now(),
+        ]);
+
+        $heatmap = ReportChart::create([
+            'user_id' => $user->id,
+            'title' => 'FORGE Weekly Heatmap',
+            'report_type' => ForgeWeeklyHeatmap::REPORT_TYPE,
+            'chart_type' => 'heatmap',
+            'data' => ForgeWeeklyHeatmap::sample(),
+            'published_at' => now(),
+        ]);
+
+        $badge = BadgeReport::create([
+            'user_id' => $user->id,
+            'title' => ForgeMonthlyBadgeReport::BADGE_MOMENTUM_ARCHITECT,
+            'report_type' => ForgeMonthlyBadgeReport::REPORT_TYPE,
+            'badge_name' => ForgeMonthlyBadgeReport::BADGE_MOMENTUM_ARCHITECT,
+            'report_data' => ForgeMonthlyBadgeReport::sample(ForgeMonthlyBadgeReport::BADGE_MOMENTUM_ARCHITECT),
+            'published_at' => now(),
+        ]);
+
+        $this->actingAs($user)
+            ->get('/dashboard')
+            ->assertOk()
+            ->assertSee(route('dashboard.reports.show', $sunday), false)
+            ->assertSee(route('dashboard.charts.show', $timeline), false)
+            ->assertSee(route('dashboard.charts.show', $heatmap), false)
+            ->assertSee(route('dashboard.badges.show', $badge), false);
+    }
+
     public function test_free_user_cannot_access_forge_sunday_report(): void
     {
         $user = User::factory()->create([
@@ -153,7 +207,7 @@ class UserWebAuthTest extends TestCase
         $this->actingAs($user)
             ->get(route('dashboard.reports.show', $report))
             ->assertOk()
-            ->assertSee('FORGE — Weekly Brief')
+            ->assertSee('Sunday Night Executive Report')
             ->assertSee($payload['meta']['prepared_time'])
             ->assertSee($payload['executive_verdict']['headline'])
             ->assertSee($payload['business_translation_layer']['objection_handling'])
@@ -184,6 +238,347 @@ class UserWebAuthTest extends TestCase
             ->assertOk()
             ->assertSee('Forge Sunday report unavailable')
             ->assertSee('meta.system');
+    }
+
+    public function test_free_user_cannot_access_forge_timeline(): void
+    {
+        $user = User::factory()->create([
+            'plan' => 'free',
+            'status' => 'free',
+        ]);
+
+        $chart = ReportChart::create([
+            'user_id' => $user->id,
+            'title' => 'FORGE Weekly Strategic Timeline',
+            'report_type' => ForgeWeeklyTimeline::REPORT_TYPE,
+            'chart_type' => 'timeline',
+            'data' => ForgeWeeklyTimeline::sample(),
+            'published_at' => now(),
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('dashboard.charts.show', $chart))
+            ->assertForbidden();
+    }
+
+    public function test_spark_user_cannot_access_forge_timeline(): void
+    {
+        $user = User::factory()->create([
+            'plan' => 'spark',
+            'status' => 'active',
+        ]);
+
+        $chart = ReportChart::create([
+            'user_id' => $user->id,
+            'title' => 'FORGE Weekly Strategic Timeline',
+            'report_type' => ForgeWeeklyTimeline::REPORT_TYPE,
+            'chart_type' => 'timeline',
+            'data' => ForgeWeeklyTimeline::sample(),
+            'published_at' => now(),
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('dashboard.charts.show', $chart))
+            ->assertForbidden();
+    }
+
+    public function test_forge_user_can_access_forge_timeline(): void
+    {
+        $user = User::factory()->create([
+            'plan' => 'forge',
+            'status' => 'active',
+        ]);
+
+        $payload = ForgeWeeklyTimeline::sample();
+
+        $chart = ReportChart::create([
+            'user_id' => $user->id,
+            'title' => 'FORGE Weekly Strategic Timeline',
+            'report_type' => ForgeWeeklyTimeline::REPORT_TYPE,
+            'chart_type' => 'timeline',
+            'data' => $payload,
+            'published_at' => now(),
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('dashboard.charts.show', $chart))
+            ->assertOk()
+            ->assertSee('FORGE Presence Intelligence')
+            ->assertSee($payload['executive_summary']['headline'])
+            ->assertSee($payload['directional_takeaway']['text']);
+    }
+
+    public function test_forge_timeline_missing_fields_fails_safely(): void
+    {
+        $user = User::factory()->create([
+            'plan' => 'forge',
+            'status' => 'active',
+        ]);
+
+        $chart = ReportChart::create([
+            'user_id' => $user->id,
+            'title' => 'FORGE Weekly Strategic Timeline',
+            'report_type' => ForgeWeeklyTimeline::REPORT_TYPE,
+            'chart_type' => 'timeline',
+            'data' => [
+                'report_type' => ForgeWeeklyTimeline::REPORT_TYPE,
+                'meta' => ['prepared_time' => 'Sunday 9:00 PM'],
+            ],
+            'published_at' => now(),
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('dashboard.charts.show', $chart))
+            ->assertOk()
+            ->assertSee('Forge weekly timeline unavailable')
+            ->assertSee('meta.system');
+    }
+
+    public function test_forge_user_can_access_forge_heatmap(): void
+    {
+        $user = User::factory()->create([
+            'plan' => 'forge',
+            'status' => 'active',
+        ]);
+
+        $payload = ForgeWeeklyHeatmap::sample();
+
+        $chart = ReportChart::create([
+            'user_id' => $user->id,
+            'title' => 'FORGE Weekly Heatmap',
+            'report_type' => ForgeWeeklyHeatmap::REPORT_TYPE,
+            'chart_type' => 'heatmap',
+            'data' => $payload,
+            'published_at' => now(),
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('dashboard.charts.show', $chart))
+            ->assertOk()
+            ->assertSee('Weekly Heatmap')
+            ->assertSee($payload['executive_summary']['headline'])
+            ->assertSee($payload['strategic_interpretation']['text']);
+    }
+
+    public function test_spark_user_cannot_access_forge_heatmap(): void
+    {
+        $user = User::factory()->create([
+            'plan' => 'spark',
+            'status' => 'active',
+        ]);
+
+        $chart = ReportChart::create([
+            'user_id' => $user->id,
+            'title' => 'FORGE Weekly Heatmap',
+            'report_type' => ForgeWeeklyHeatmap::REPORT_TYPE,
+            'chart_type' => 'heatmap',
+            'data' => ForgeWeeklyHeatmap::sample(),
+            'published_at' => now(),
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('dashboard.charts.show', $chart))
+            ->assertForbidden();
+    }
+
+    public function test_forge_heatmap_missing_fields_fails_safely(): void
+    {
+        $user = User::factory()->create([
+            'plan' => 'forge',
+            'status' => 'active',
+        ]);
+
+        $chart = ReportChart::create([
+            'user_id' => $user->id,
+            'title' => 'FORGE Weekly Heatmap',
+            'report_type' => ForgeWeeklyHeatmap::REPORT_TYPE,
+            'chart_type' => 'heatmap',
+            'data' => [
+                'report_type' => ForgeWeeklyHeatmap::REPORT_TYPE,
+                'meta' => ['prepared_time' => 'Sunday 9:00 PM'],
+            ],
+            'published_at' => now(),
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('dashboard.charts.show', $chart))
+            ->assertOk()
+            ->assertSee('Forge weekly heatmap unavailable')
+            ->assertSee('meta.system');
+    }
+
+    public function test_free_user_cannot_access_forge_monthly_badge(): void
+    {
+        $user = User::factory()->create([
+            'plan' => 'free',
+            'status' => 'free',
+        ]);
+
+        $badge = BadgeReport::create([
+            'user_id' => $user->id,
+            'title' => ForgeMonthlyBadgeReport::BADGE_MOMENTUM_ARCHITECT,
+            'report_type' => ForgeMonthlyBadgeReport::REPORT_TYPE,
+            'badge_name' => ForgeMonthlyBadgeReport::BADGE_MOMENTUM_ARCHITECT,
+            'report_data' => ForgeMonthlyBadgeReport::sample(ForgeMonthlyBadgeReport::BADGE_MOMENTUM_ARCHITECT),
+            'published_at' => now(),
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('dashboard.badges.show', $badge))
+            ->assertForbidden();
+    }
+
+    public function test_spark_user_cannot_access_forge_monthly_badge(): void
+    {
+        $user = User::factory()->create([
+            'plan' => 'spark',
+            'status' => 'active',
+        ]);
+
+        $badge = BadgeReport::create([
+            'user_id' => $user->id,
+            'title' => ForgeMonthlyBadgeReport::BADGE_INFLUENCE_COMMANDER,
+            'report_type' => ForgeMonthlyBadgeReport::REPORT_TYPE,
+            'badge_name' => ForgeMonthlyBadgeReport::BADGE_INFLUENCE_COMMANDER,
+            'report_data' => ForgeMonthlyBadgeReport::sample(ForgeMonthlyBadgeReport::BADGE_INFLUENCE_COMMANDER),
+            'published_at' => now(),
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('dashboard.badges.show', $badge))
+            ->assertForbidden();
+    }
+
+    public function test_forge_user_can_access_monthly_badge_report(): void
+    {
+        $user = User::factory()->create([
+            'plan' => 'forge',
+            'status' => 'active',
+        ]);
+
+        $payload = ForgeMonthlyBadgeReport::sample(ForgeMonthlyBadgeReport::BADGE_PRESENCE_DOMINATOR);
+
+        $badge = BadgeReport::create([
+            'user_id' => $user->id,
+            'title' => ForgeMonthlyBadgeReport::BADGE_PRESENCE_DOMINATOR,
+            'report_type' => ForgeMonthlyBadgeReport::REPORT_TYPE,
+            'badge_name' => ForgeMonthlyBadgeReport::BADGE_PRESENCE_DOMINATOR,
+            'report_data' => $payload,
+            'published_at' => now(),
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('dashboard.badges.show', $badge))
+            ->assertOk()
+            ->assertSee(ForgeMonthlyBadgeReport::BADGE_PRESENCE_DOMINATOR)
+            ->assertSee($payload['executive_summary']['headline'])
+            ->assertSee($payload['next_month_focus']['text']);
+    }
+
+    public function test_forge_monthly_badge_missing_fields_fails_safely(): void
+    {
+        $user = User::factory()->create([
+            'plan' => 'forge',
+            'status' => 'active',
+        ]);
+
+        $badge = BadgeReport::create([
+            'user_id' => $user->id,
+            'title' => 'Broken Badge',
+            'report_type' => ForgeMonthlyBadgeReport::REPORT_TYPE,
+            'badge_name' => ForgeMonthlyBadgeReport::BADGE_MOMENTUM_ARCHITECT,
+            'report_data' => [
+                'badge_name' => ForgeMonthlyBadgeReport::BADGE_MOMENTUM_ARCHITECT,
+                'meta' => ['prepared_time' => 'First Monday of the Month'],
+            ],
+            'published_at' => now(),
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('dashboard.badges.show', $badge))
+            ->assertOk()
+            ->assertSee('Forge monthly badge unavailable')
+            ->assertSee('meta.system');
+    }
+
+    public function test_admin_can_store_and_preview_supported_structured_report_types(): void
+    {
+        $admin = User::factory()->create([
+            'role' => 'admin',
+            'plan' => 'forge',
+            'status' => 'active',
+        ]);
+
+        $user = User::factory()->create([
+            'plan' => 'forge',
+            'status' => 'active',
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('admin.reports.store'), [
+                'type' => 'report',
+                'user_id' => $user->id,
+                'title' => 'FORGE — Weekly Brief',
+                'report_type' => ForgeSundayWeeklyBrief::REPORT_TYPE,
+                'report_json' => json_encode(ForgeSundayWeeklyBrief::sample(), JSON_THROW_ON_ERROR),
+            ])
+            ->assertRedirect();
+
+        $this->actingAs($admin)
+            ->post(route('admin.reports.store'), [
+                'type' => 'chart',
+                'user_id' => $user->id,
+                'title' => 'FORGE Weekly Strategic Timeline',
+                'report_type' => ForgeWeeklyTimeline::REPORT_TYPE,
+                'report_json' => json_encode(ForgeWeeklyTimeline::sample(), JSON_THROW_ON_ERROR),
+            ])
+            ->assertRedirect();
+
+        $this->actingAs($admin)
+            ->post(route('admin.reports.store'), [
+                'type' => 'chart',
+                'user_id' => $user->id,
+                'title' => 'FORGE Weekly Heatmap',
+                'report_type' => ForgeWeeklyHeatmap::REPORT_TYPE,
+                'report_json' => json_encode(ForgeWeeklyHeatmap::sample(), JSON_THROW_ON_ERROR),
+            ])
+            ->assertRedirect();
+
+        $this->actingAs($admin)
+            ->post(route('admin.reports.store'), [
+                'type' => 'badge',
+                'user_id' => $user->id,
+                'title' => ForgeMonthlyBadgeReport::BADGE_MOMENTUM_ARCHITECT,
+                'badge_name' => ForgeMonthlyBadgeReport::BADGE_MOMENTUM_ARCHITECT,
+                'report_type' => ForgeMonthlyBadgeReport::REPORT_TYPE,
+                'report_json' => json_encode(ForgeMonthlyBadgeReport::sample(ForgeMonthlyBadgeReport::BADGE_MOMENTUM_ARCHITECT), JSON_THROW_ON_ERROR),
+            ])
+            ->assertRedirect();
+
+        $report = Report::where('report_type', ForgeSundayWeeklyBrief::REPORT_TYPE)->firstOrFail();
+        $chart = ReportChart::where('report_type', ForgeWeeklyTimeline::REPORT_TYPE)->firstOrFail();
+        $heatmap = ReportChart::where('report_type', ForgeWeeklyHeatmap::REPORT_TYPE)->firstOrFail();
+        $badge = BadgeReport::where('report_type', ForgeMonthlyBadgeReport::REPORT_TYPE)->firstOrFail();
+
+        $this->actingAs($admin)
+            ->get(route('dashboard.reports.show', $report))
+            ->assertOk()
+            ->assertSee('FORGE Sunday Night Executive Report');
+
+        $this->actingAs($admin)
+            ->get(route('dashboard.charts.show', $chart))
+            ->assertOk()
+            ->assertSee('FORGE Weekly Strategic Timeline');
+
+        $this->actingAs($admin)
+            ->get(route('dashboard.charts.show', $heatmap))
+            ->assertOk()
+            ->assertSee('FORGE Weekly Heatmap');
+
+        $this->actingAs($admin)
+            ->get(route('dashboard.badges.show', $badge))
+            ->assertOk()
+            ->assertSee(ForgeMonthlyBadgeReport::BADGE_MOMENTUM_ARCHITECT);
     }
 
     public function test_signed_in_home_install_button_downloads_extension(): void

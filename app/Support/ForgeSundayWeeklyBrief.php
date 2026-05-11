@@ -58,19 +58,6 @@ class ForgeSundayWeeklyBrief
 
     public static function sample(): array
     {
-        $path = database_path('seeders/data/forge-sunday-weekly-brief.json');
-        $contents = file_get_contents($path);
-
-        if ($contents === false) {
-            throw new \RuntimeException('Unable to load Forge Sunday weekly brief sample JSON.');
-        }
-
-        $payload = json_decode($contents, true);
-
-        if (! is_array($payload)) {
-            throw new \RuntimeException('Forge Sunday weekly brief sample JSON is invalid.');
-        }
-
-        return $payload;
+        return ForgeReportFixture::load('forge-sunday-weekly-brief.json');
     }
 }

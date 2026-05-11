@@ -56,6 +56,9 @@
                     <select class="form-select" name="report_type">
                         <option value="standard">Standard report</option>
                         <option value="forge_sunday_weekly_brief">Forge Sunday 9PM brief</option>
+                        <option value="forge_weekly_heatmap">Forge Weekly Heatmap</option>
+                        <option value="forge_weekly_timeline">Forge Weekly Timeline</option>
+                        <option value="forge_monthly_badge">Forge Monthly Badge</option>
                     </select>
                 </div>
                 <div class="col-md-2">
@@ -83,9 +86,9 @@
                     <textarea class="form-control" name="summary" rows="2"></textarea>
                 </div>
                 <div class="col-12">
-                    <label class="form-label fw-bold">Forge Sunday Report JSON</label>
+                    <label class="form-label fw-bold">Structured Forge Report JSON</label>
                     <textarea class="form-control font-monospace" name="report_json" rows="12" placeholder='{"meta":{"prepared_time":"Sunday 9:00 PM","system":"Infinite Sugar"}}'></textarea>
-                    <div class="form-text">Use this only for the fixed Forge Sunday 9PM executive report structure.</div>
+                    <div class="form-text">Paste the fixed JSON for Sunday briefs, weekly heatmaps, weekly timelines, or monthly badge reports.</div>
                 </div>
                 <div class="col-12">
                     <button class="btn btn-admin px-4">Upload Asset</button>
@@ -124,6 +127,10 @@
                             <td class="text-end">
                                 @if ($type === 'report' && ($item->report_type ?? 'standard') === 'forge_sunday_weekly_brief')
                                     <a class="btn btn-sm btn-outline-secondary rounded-pill px-3 me-2" href="{{ route('dashboard.reports.show', $item) }}">Preview</a>
+                                @elseif ($type === 'chart' && in_array(($item->report_type ?? 'standard'), ['forge_weekly_timeline', 'forge_weekly_heatmap'], true))
+                                    <a class="btn btn-sm btn-outline-secondary rounded-pill px-3 me-2" href="{{ route('dashboard.charts.show', $item) }}">Preview</a>
+                                @elseif ($type === 'badge' && ($item->report_type ?? 'standard') === 'forge_monthly_badge')
+                                    <a class="btn btn-sm btn-outline-secondary rounded-pill px-3 me-2" href="{{ route('dashboard.badges.show', $item) }}">Preview</a>
                                 @endif
                                 <form method="post" action="{{ route('admin.reports.destroy', [$type, $item->id]) }}">
                                     @csrf

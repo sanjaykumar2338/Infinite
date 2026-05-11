@@ -1,0 +1,31 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::table('report_charts', function (Blueprint $table) {
+            $table->string('report_type')->default('standard')->after('title');
+        });
+
+        Schema::table('badge_reports', function (Blueprint $table) {
+            $table->string('report_type')->default('standard')->after('title');
+            $table->json('report_data')->nullable()->after('summary');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table('badge_reports', function (Blueprint $table) {
+            $table->dropColumn(['report_type', 'report_data']);
+        });
+
+        Schema::table('report_charts', function (Blueprint $table) {
+            $table->dropColumn('report_type');
+        });
+    }
+};

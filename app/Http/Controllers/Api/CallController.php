@@ -39,6 +39,10 @@ class CallController extends Controller
 
     public function usage(Request $request, AccessService $access, CallUsageService $usage): JsonResponse
     {
+        if (! $access->canUseSparkCall($request->user())) {
+            return response()->json(['message' => 'Spark trial limit reached. Upgrade required.'], 402);
+        }
+
         $result = $usage->touch($request->user());
 
         return response()->json($access->check($result['user']));

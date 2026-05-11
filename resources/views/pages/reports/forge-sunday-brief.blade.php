@@ -1,10 +1,10 @@
-<x-layouts.app title="FORGE — Weekly Brief">
+<x-layouts.app title="FORGE Sunday Night Executive Report">
     <section class="mb-4">
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
             <div>
                 <div class="eyebrow mb-3">Forge report</div>
-                <h1 class="section-title mb-2">FORGE Sunday Night Report</h1>
-                <p class="lead-copy mb-0">Weekly executive brief for Forge users.</p>
+                <h1 class="section-title mb-2">FORGE Sunday Night Executive Report</h1>
+                <p class="lead-copy mb-0">Plain-language strategic interpretation for Forge users.</p>
             </div>
             <a class="btn btn-soft" href="{{ route('dashboard') }}">Back to Dashboard</a>
         </div>

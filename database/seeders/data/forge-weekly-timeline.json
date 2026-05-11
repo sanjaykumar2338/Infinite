@@ -1,0 +1,22 @@
+{
+  "report_type": "forge_weekly_timeline",
+  "meta": {
+    "prepared_time": "Sunday 9:00 PM",
+    "system": "Infinite Sugar"
+  },
+  "executive_summary": {
+    "headline": "Presence strengthened through the week, with the cleanest strategic movement arriving late in the decision cycle."
+  },
+  "timeline": {
+    "days": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    "progression_curve": [42, 48, 53, 61, 69, 74, 82]
+  },
+  "pattern_insights": [
+    "Early-week conversations required more correction after pressure questions, but midweek execution settled into a steadier rhythm.",
+    "Buyer trust improved when positioning stayed outcome-led instead of detail-heavy, especially in the second half of the week.",
+    "The final calls show the strongest combination of composure and authority, suggesting the week closed with cleaner control."
+  ],
+  "directional_takeaway": {
+    "text": "The strategic direction is positive. Protect the same measured pacing next week and use it to sharpen transitions into objection handling and the close."
+  }
+}

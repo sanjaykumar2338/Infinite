@@ -51,6 +51,7 @@ class SaasApiTest extends TestCase
             ->assertOk()
             ->assertJsonPath('can_use_spark_call', true)
             ->assertJsonPath('can_use_reports', false)
+            ->assertJsonPath('free_call_allowance_minutes', 30)
             ->assertJsonPath('remaining_minutes', 30);
 
         $this->fakeFirebase(['uid' => $spark->firebase_uid, 'email' => $spark->email]);
@@ -90,6 +91,22 @@ class SaasApiTest extends TestCase
 
         $this->postJson('/api/call/start', [], $this->authHeaders())
             ->assertStatus(402);
+    }
+
+    public function test_free_spark_usage_endpoint_blocks_after_trial_limit(): void
+    {
+        $user = User::factory()->create([
+            'firebase_uid' => 'trial-blocked-uid',
+            'email' => 'trial-blocked@example.com',
+            'call_minutes_used' => AccessService::FREE_TRIAL_MINUTES,
+            'free_call_used' => true,
+        ]);
+
+        $this->fakeFirebase(['uid' => $user->firebase_uid, 'email' => $user->email]);
+
+        $this->postJson('/api/call/usage', [], $this->authHeaders())
+            ->assertStatus(402)
+            ->assertJsonPath('message', 'Spark trial limit reached. Upgrade required.');
     }
 
     public function test_stripe_checkout_session_creation(): void

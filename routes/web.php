@@ -24,9 +24,15 @@ Route::get('/signup', [UserAuthController::class, 'create'])->name('signup');
 Route::post('/login/firebase', [UserAuthController::class, 'firebaseSession'])->name('login.firebase');
 Route::post('/logout', [UserAuthController::class, 'destroy'])->middleware('auth')->name('logout');
 Route::get('/dashboard', UserDashboardController::class)->middleware('auth')->name('dashboard');
-Route::get('/dashboard/reports/{report}', [UserReportController::class, 'show'])
+Route::get('/dashboard/reports/{report}', [UserReportController::class, 'showReport'])
     ->middleware('auth')
     ->name('dashboard.reports.show');
+Route::get('/dashboard/charts/{reportChart}', [UserReportController::class, 'showChart'])
+    ->middleware('auth')
+    ->name('dashboard.charts.show');
+Route::get('/dashboard/badges/{badgeReport}', [UserReportController::class, 'showBadge'])
+    ->middleware('auth')
+    ->name('dashboard.badges.show');
 Route::get('/extension/download', function () {
     $archive = public_path('downloads/infinite-sugar-extension.zip');
 
