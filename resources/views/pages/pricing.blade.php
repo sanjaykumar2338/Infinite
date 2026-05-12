@@ -174,7 +174,7 @@
                     <div class="pricing-card-price">$79/month</div>
                 </div>
 
-                <p class="pricing-card-copy">Includes 1 Free Live Call · 30 minutes</p>
+                <p class="pricing-card-copy">Includes 1 free live call · 30 minutes</p>
                 <p class="pricing-card-copy">Experience real-time guidance before committing.<br>Most people know within one call.</p>
 
                 <a class="pricing-card-action" href="{{ route('billing.checkout', 'spark') }}">

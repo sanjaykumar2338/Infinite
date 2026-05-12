@@ -240,6 +240,34 @@ class SaasApiTest extends TestCase
         ]);
     }
 
+    public function test_webhook_spark_activation_keeps_existing_free_call_usage(): void
+    {
+        $user = User::factory()->create([
+            'plan' => 'free',
+            'status' => 'free',
+            'call_minutes_used' => 12,
+            'free_call_used' => false,
+        ]);
+
+        $this->fakeStripeWebhook($this->eventPayload('evt_spark_checkout', 'checkout.session.completed', [
+            'customer' => 'cus_spark_checkout',
+            'subscription' => 'sub_spark_checkout',
+            'client_reference_id' => (string) $user->id,
+            'metadata' => ['user_id' => (string) $user->id, 'plan' => 'spark'],
+        ]));
+
+        $this->postJson('/api/stripe/webhook', [])->assertOk();
+
+        $user->refresh();
+
+        $this->assertSame('spark', $user->plan);
+        $this->assertSame('active', $user->status);
+        $this->assertSame(12, $user->call_minutes_used);
+        $this->assertFalse($user->free_call_used);
+        $this->assertTrue(app(AccessService::class)->check($user)['can_use_live_insights']);
+        $this->assertNull(app(AccessService::class)->check($user)['remaining_minutes']);
+    }
+
     public function test_admin_tester_gets_full_access(): void
     {
         $tester = User::factory()->create(['firebase_uid' => 'tester-uid', 'role' => 'tester']);

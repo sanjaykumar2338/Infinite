@@ -95,6 +95,36 @@ class UserWebAuthTest extends TestCase
             ->assertSee('Logout');
     }
 
+    public function test_dashboard_shows_spark_call_usage_and_remaining_minutes(): void
+    {
+        $user = User::factory()->create([
+            'name' => 'Spark Trial',
+            'email' => 'spark-trial@example.com',
+            'plan' => 'free',
+            'status' => 'free',
+            'call_minutes_used' => 11,
+            'free_call_used' => false,
+        ]);
+
+        $this->actingAs($user)
+            ->get('/dashboard')
+            ->assertOk()
+            ->assertSee('Free')
+            ->assertSee('Free call minutes used')
+            ->assertSee('11 / 30')
+            ->assertSee('Remaining free minutes')
+            ->assertSee('19')
+            ->assertSee('Spark call')
+            ->assertSee('Allowed');
+    }
+
+    public function test_pricing_page_shows_spark_free_live_call_copy(): void
+    {
+        $this->get('/pricing')
+            ->assertOk()
+            ->assertSee('Includes 1 free live call · 30 minutes', false);
+    }
+
     public function test_dashboard_shows_forge_structured_report_links(): void
     {
         $user = User::factory()->create([

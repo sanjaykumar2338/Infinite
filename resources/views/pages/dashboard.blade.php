@@ -30,8 +30,9 @@
             ['Current plan', ucfirst($user->plan), 'Plan managed by Stripe or admin'],
             ['Status', ucfirst(str_replace('_', ' ', $user->status)), 'Billing/access state'],
             ['Period end', optional($user->current_period_end)->toFormattedDateString() ?: 'n/a', 'Paid-through date from Stripe'],
-            ['Free call used', $user->free_call_used ? 'Yes' : 'No', 'Spark trial tracking'],
-            ['Call minutes', $user->call_minutes_used, 'Backend-counted minutes'],
+            ['Free call used', $access['free_call_used'] ? 'Yes' : 'No', 'Spark trial tracking'],
+            ['Free call minutes used', $access['call_minutes_used'].' / '.$access['free_call_allowance_minutes'], 'Backend-counted Spark trial minutes'],
+            ['Remaining free minutes', $access['remaining_minutes'] ?? 'Unlimited', 'Free Spark call balance'],
         ] as [$label, $value, $copy])
             <div class="col-sm-6 col-xl-3">
                 <div class="feature-card">
