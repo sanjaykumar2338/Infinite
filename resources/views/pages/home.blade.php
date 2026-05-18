@@ -113,9 +113,10 @@
             margin: 0 0 1.1rem;
             color: var(--landing-olive);
             font-family: Inter, Arial, sans-serif;
-            font-size: .9rem;
+            font-size: clamp(1.08rem, 1.45vw, 1.38rem);
             font-weight: 800;
-            letter-spacing: .11em;
+            line-height: 1.18;
+            letter-spacing: .08em;
             text-transform: uppercase;
         }
 
@@ -561,6 +562,25 @@
             line-height: 1.15;
         }
 
+        .briefing-image-card {
+            margin: 0;
+            padding: clamp(.65rem, 1.6vw, .95rem);
+            border: 1px solid var(--landing-line);
+            border-radius: .5rem;
+            background: rgba(255, 253, 248, .78);
+            box-shadow: 0 24px 58px rgba(95, 60, 24, .1);
+        }
+
+        .briefing-image-card img {
+            display: block;
+            max-width: 100%;
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+            border-radius: .42rem;
+            box-shadow: 0 18px 42px rgba(95, 60, 24, .11);
+        }
+
         .pricing-card {
             display: grid;
             gap: 1rem;
@@ -618,6 +638,7 @@
 
             .hero-grid {
                 min-height: auto;
+                width: min(100%, calc(100vw - 2rem));
             }
 
             .hero-copy {
@@ -627,6 +648,7 @@
 
             .landing-title {
                 max-width: 11.5ch;
+                overflow-wrap: break-word;
             }
 
             .hero-video-frame {
@@ -653,8 +675,22 @@
             }
 
             .landing-title {
+                max-width: 100%;
                 font-size: clamp(3rem, 15vw, 4.15rem);
                 line-height: 1;
+            }
+
+            .hero-summary,
+            .hero-detail,
+            .section-heading,
+            .briefing-title {
+                max-width: 100%;
+                overflow-wrap: break-word;
+            }
+
+            .hero-positioning {
+                font-size: clamp(1rem, 4.7vw, 1.18rem);
+                line-height: 1.25;
             }
 
             .hero-button,
@@ -826,25 +862,13 @@
                         <h2 class="briefing-title">Reports and charts designed like luxury executive deliverables.</h2>
                         <p class="briefing-copy mt-3">Every Forge output is interpretive before it is visual. The system frames what changed, why it matters, and what identity shift the user is building, without exposing internal mechanics or raw metric noise.</p>
                     </div>
-                    <div class="briefing-panel" aria-label="Executive report preview">
-                        <div class="briefing-sheet secondary">
-                            <div class="briefing-label">Weekly Heatmap</div>
-                            <div class="briefing-line"></div>
-                            <div class="briefing-line short"></div>
-                            <div class="briefing-verdict">Pressure moments became easier to absorb.</div>
-                        </div>
-                        <div class="briefing-sheet tertiary">
-                            <div class="briefing-label">Timeline</div>
-                            <div class="briefing-line"></div>
-                            <div class="briefing-line short"></div>
-                        </div>
-                        <div class="briefing-sheet primary">
-                            <div class="briefing-label">Sunday Night Executive Report</div>
-                            <div class="briefing-line"></div>
-                            <div class="briefing-line short"></div>
-                            <div class="briefing-verdict">Presence held. Authority strengthened. Momentum became repeatable.</div>
-                        </div>
-                    </div>
+                    <figure class="briefing-image-card" aria-label="Executive report and chart preview">
+                        <img
+                            src="{{ asset('images/briefings-and-reports.jpg') }}"
+                            alt="InfiniteSugar executive report and chart preview"
+                            loading="lazy"
+                        >
+                    </figure>
                 </div>
             </section>
 

@@ -623,9 +623,17 @@
         @media (max-width: 991.98px) {
             .site-nav .container {
                 width: 100%;
+                flex-direction: column;
                 align-items: flex-start;
                 gap: 1rem;
                 padding-inline: clamp(1rem, 4vw, 1.5rem);
+            }
+
+            .site-nav .navbar-nav {
+                width: 100%;
+                margin-left: 0 !important;
+                align-items: flex-start !important;
+                justify-content: flex-start;
             }
 
             .hero-video {
