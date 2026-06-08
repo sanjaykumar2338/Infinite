@@ -47,8 +47,8 @@ return [
         'secret' => env('STRIPE_SECRET'),
         'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
         'prices' => [
-            'spark' => env('STRIPE_PRICE_SPARK', env('STRIPE_SPARK_PRICE_ID')),
-            'forge' => env('STRIPE_PRICE_FORGE', env('STRIPE_FORGE_PRICE_ID')),
+            'spark' => env('STRIPE_SPARK_PRICE_ID') ?: env('STRIPE_PRICE_SPARK'),
+            'forge' => env('STRIPE_FORGE_PRICE_ID') ?: env('STRIPE_PRICE_FORGE'),
         ],
         'success_url' => env('STRIPE_SUCCESS_URL', env('APP_URL').'/dashboard?checkout=success'),
         'cancel_url' => env('STRIPE_CANCEL_URL', env('APP_URL').'/pricing?checkout=cancelled'),

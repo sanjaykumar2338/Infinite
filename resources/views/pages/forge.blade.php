@@ -1,4 +1,15 @@
 <x-layouts.app title="Forge | infinitesugar">
+    @php
+        $contentSections = $pageContent ?? collect();
+        $rawSection = fn (string $key) => $contentSections->get($key);
+        $section = fn (string $key) => $rawSection($key)?->is_active ? $rawSection($key) : null;
+        $isHidden = fn (string $key) => (bool) ($rawSection($key) && ! $rawSection($key)->is_active);
+        $contentTitle = fn (string $key, string $fallback) => $section($key)?->title ?: $fallback;
+        $contentSubtitle = fn (string $key, string $fallback) => $section($key)?->subtitle ?: $fallback;
+        $contentBody = fn (string $key, string $fallback) => $section($key)?->body ?: $fallback;
+        $lines = fn (string $text) => array_values(array_filter(preg_split('/\R/', trim($text)) ?: [], fn ($line) => trim($line) !== ''));
+    @endphp
+
     <style>
         .forge-page {
             width: 100vw;
@@ -108,31 +119,34 @@
         }
     </style>
 
+    @unless ($isHidden('hero'))
     <section class="forge-page">
         <div class="forge-page-wrap">
-            <h1 class="forge-page-title">FORGE</h1>
+            <h1 class="forge-page-title">{{ $contentTitle('hero', 'FORGE') }}</h1>
 
-            <p class="forge-page-line"><span>Turns </span><span class="forge-page-gold">live behavioral signals into measurable deal movement.</span></p>
-            <p class="forge-page-line">Makes timing visible — where<br>revenue is protected or lost.</p>
+            <p class="forge-page-line"><span class="forge-page-gold">{{ $contentSubtitle('hero', 'Turns live behavioral signals into measurable deal movement.') }}</span></p>
+            <p class="forge-page-line">{!! nl2br(e($contentBody('hero', "Makes timing visible — where\nrevenue is protected or lost."))) !!}</p>
 
+            @unless ($isHidden('signals'))
             <div class="forge-page-signals">
-                <p class="forge-page-gold">Composure shifting.</p>
-                <p class="forge-page-gold">Authority strengthening.</p>
-                <p class="forge-page-gold">Probability changing.</p>
-                <p class="forge-page-gold">During it.</p>
+                @foreach ($lines($contentBody('signals', "Composure shifting.\nAuthority strengthening.\nProbability changing.\nDuring it.")) as $line)
+                    <p class="forge-page-gold">{{ $line }}</p>
+                @endforeach
             </div>
+            @endunless
 
             <p class="forge-page-built">Built for operators responsible for <span class="forge-page-gold">outcomes.</span></p>
 
+            @unless ($isHidden('action'))
             <div class="forge-page-action">
-                <h2>In Action</h2>
+                <h2>{{ $contentTitle('action', 'In Action') }}</h2>
                 <ul>
-                    <li>Protect pricing power under pressure</li>
-                    <li>Prevent authority erosion</li>
-                    <li>Time the close when control is strongest</li>
-                    <li>Improve forecast accuracy through behavioral consistency</li>
+                    @foreach ($lines($contentBody('action', "Protect pricing power under pressure\nPrevent authority erosion\nTime the close when control is strongest\nImprove forecast accuracy through behavioral consistency")) as $line)
+                        <li>{{ $line }}</li>
+                    @endforeach
                 </ul>
             </div>
+            @endunless
 
             <div class="forge-page-bottom">
                 <p>Signals surface live.</p>
@@ -140,4 +154,5 @@
             </div>
         </div>
     </section>
+    @endunless
 </x-layouts.app>

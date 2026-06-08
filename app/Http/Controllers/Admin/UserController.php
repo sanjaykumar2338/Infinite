@@ -32,6 +32,7 @@ class UserController extends Controller
         ]);
 
         $data['free_call_used'] = $request->boolean('free_call_used');
+        $data['subscription_status'] = $data['status'];
         $user->update($data);
 
         return back()->with('status', 'User updated.');

@@ -32,6 +32,7 @@ class UserFactory extends Factory
             'firebase_uid' => fake()->uuid(),
             'plan' => 'free',
             'status' => 'free',
+            'subscription_status' => 'free',
             'free_call_used' => false,
             'call_minutes_used' => 0,
             'role' => 'user',

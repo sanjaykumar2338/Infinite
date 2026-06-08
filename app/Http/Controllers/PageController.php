@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\PageContent;
 use Illuminate\Contracts\View\View;
 
 class PageController extends Controller
@@ -19,6 +20,8 @@ class PageController extends Controller
             'dashboard',
         ], true), 404);
 
-        return view("pages.$page");
+        return view("pages.$page", [
+            'pageContent' => PageContent::forPage($page),
+        ]);
     }
 }

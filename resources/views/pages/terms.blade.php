@@ -1,10 +1,21 @@
 <x-layouts.app title="Terms & Conditions | infinitesugar">
+    @php
+        $contentSections = $pageContent ?? collect();
+        $rawSection = fn (string $key) => $contentSections->get($key);
+        $section = fn (string $key) => $rawSection($key)?->is_active ? $rawSection($key) : null;
+        $isHidden = fn (string $key) => (bool) ($rawSection($key) && ! $rawSection($key)->is_active);
+        $contentTitle = fn (string $key, string $fallback) => $section($key)?->title ?: $fallback;
+        $contentSubtitle = fn (string $key, string $fallback) => $section($key)?->subtitle ?: $fallback;
+        $contentBody = fn (string $key, string $fallback) => $section($key)?->body ?: $fallback;
+    @endphp
+
+    @unless ($isHidden('hero'))
     <section class="legal-hero">
         <div class="legal-hero-grid">
             <div class="legal-hero-copy">
-                <div class="eyebrow">Terms & Conditions</div>
-                <h1 class="legal-hero-title">Terms and Conditions</h1>
-                <p class="legal-hero-summary">These terms cover how Infinite Sugar works, how subscriptions are handled, and the rules for using the website and Chrome extension in a clear, straightforward way.</p>
+                <div class="eyebrow">{{ $contentSubtitle('hero', 'Terms & Conditions') }}</div>
+                <h1 class="legal-hero-title">{{ $contentTitle('hero', 'Terms and Conditions') }}</h1>
+                <p class="legal-hero-summary">{!! nl2br(e($contentBody('hero', 'These terms cover how Infinite Sugar works, how subscriptions are handled, and the rules for using the website and Chrome extension in a clear, straightforward way.'))) !!}</p>
             </div>
             <div class="legal-hero-meta">
                 <div class="legal-meta-card">
@@ -18,9 +29,12 @@
             </div>
         </div>
     </section>
+    @endunless
 
     <section class="legal-doc py-5 mx-auto">
-        <p>We believe in clarity, fairness, and transparency. These Terms explain how Infinite Sugar works and how we protect both you and our platform.</p>
+        @unless ($isHidden('intro'))
+            <p>{!! nl2br(e($contentBody('intro', 'We believe in clarity, fairness, and transparency. These Terms explain how Infinite Sugar works and how we protect both you and our platform.'))) !!}</p>
+        @endunless
         <p>These Terms and Conditions ("Terms") govern your access to and use of the website located at https://infinitesugar.com and the Infinite Sugar Chrome extension, operated by PeabodyandFrenchCoffee LLC ("Company," "we," "us," or "our").</p>
         <p>By accessing or using the Website or Extension, you agree to be legally bound by these Terms. If you do not agree, you must immediately stop using the Services.</p>
 
@@ -40,7 +54,12 @@
         <h2>III. Eligibility</h2>
         <p>You must be at least 18 years old, or the age of majority in your jurisdiction, and legally capable of entering into binding agreements. The Services are not intended for minors.</p>
 
-        <h2>IV. Free Trial and Subscription Billing</h2>
+        @unless ($isHidden('billing'))
+            <h2>{{ $contentTitle('billing', 'IV. Free Trial and Subscription Billing') }}</h2>
+            @if ($section('billing')?->body)
+                <p>{!! nl2br(e($contentBody('billing', ''))) !!}</p>
+            @endif
+        @endunless
         <h3>Spark 30-Minute Free Call</h3>
         <ul>
             <li>New users are entitled to one 30-minute free trial call on the Spark tier.</li>
@@ -107,7 +126,9 @@
             <li>These Terms constitute the entire agreement between you and the Company.</li>
         </ul>
 
-        <h2>Contact Us</h2>
-        <p>PeabodyandFrenchCoffee LLC<br>Email: contact@infinitesugar.com</p>
+        @unless ($isHidden('contact'))
+            <h2>{{ $contentTitle('contact', 'Contact Us') }}</h2>
+            <p>{!! nl2br(e($contentBody('contact', "PeabodyandFrenchCoffee LLC\nEmail: contact@infinitesugar.com"))) !!}</p>
+        @endunless
     </section>
 </x-layouts.app>

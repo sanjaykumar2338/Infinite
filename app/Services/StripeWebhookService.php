@@ -65,6 +65,7 @@ class StripeWebhookService
         $user->update([
             'plan' => in_array($plan, ['spark', 'forge'], true) ? $plan : $user->plan,
             'status' => 'active',
+            'subscription_status' => 'active',
             'stripe_customer_id' => $session->customer ?? $user->stripe_customer_id,
             'stripe_subscription_id' => $session->subscription ?? $user->stripe_subscription_id,
         ]);
@@ -78,18 +79,36 @@ class StripeWebhookService
             return;
         }
 
+        $periodEnd = $this->periodEndFromInvoice($invoice) ?? $user->paidThrough();
+
         $user->update([
             'status' => 'active',
+            'subscription_status' => 'active',
             'stripe_customer_id' => $invoice->customer ?? $user->stripe_customer_id,
             'stripe_subscription_id' => $invoice->subscription ?? $user->stripe_subscription_id,
-            'current_period_end' => $this->periodEndFromInvoice($invoice) ?? $user->current_period_end,
+            'current_period_end' => $periodEnd,
+            'current_period_ends_at' => $periodEnd,
         ]);
     }
 
     private function invoicePaymentFailed(object $invoice): void
     {
-        $this->findUser(null, $invoice->customer ?? null, null, $invoice->subscription ?? null)
-            ?->update(['status' => 'past_due']);
+        $user = $this->findUser(null, $invoice->customer ?? null, null, $invoice->subscription ?? null);
+
+        if (! $user) {
+            return;
+        }
+
+        $periodEnd = $this->periodEndFromInvoice($invoice) ?? $user->paidThrough();
+
+        $user->update([
+            'status' => 'past_due',
+            'subscription_status' => 'past_due',
+            'stripe_customer_id' => $invoice->customer ?? $user->stripe_customer_id,
+            'stripe_subscription_id' => $invoice->subscription ?? $user->stripe_subscription_id,
+            'current_period_end' => $periodEnd,
+            'current_period_ends_at' => $periodEnd,
+        ]);
     }
 
     private function subscriptionUpdated(object $subscription): void
@@ -101,19 +120,19 @@ class StripeWebhookService
         }
 
         $plan = $subscription->metadata->plan ?? $this->billing->planFromPrice($subscription->items->data[0]->price->id ?? null) ?? $user->plan;
-        $status = match ($subscription->status ?? null) {
-            'active', 'trialing' => 'active',
-            'past_due', 'unpaid' => 'past_due',
-            'canceled' => 'cancelled',
-            default => $user->status,
-        };
+        $status = $this->normalizeSubscriptionStatus($subscription->status ?? null, $user->billingStatus());
+        $periodEnd = $this->fromTimestamp($subscription->current_period_end ?? null) ?? $user->paidThrough();
+        $trialEnd = $this->fromTimestamp($subscription->trial_end ?? null);
 
         $user->update([
             'plan' => in_array($plan, ['spark', 'forge'], true) ? $plan : $user->plan,
             'status' => $status,
+            'subscription_status' => $status,
             'stripe_customer_id' => $subscription->customer ?? $user->stripe_customer_id,
             'stripe_subscription_id' => $subscription->id ?? $user->stripe_subscription_id,
-            'current_period_end' => $this->fromTimestamp($subscription->current_period_end ?? null),
+            'trial_ends_at' => $trialEnd ?? $user->trial_ends_at,
+            'current_period_end' => $periodEnd,
+            'current_period_ends_at' => $periodEnd,
         ]);
     }
 
@@ -129,7 +148,9 @@ class StripeWebhookService
 
         $user->update([
             'status' => 'cancelled',
+            'subscription_status' => 'cancelled',
             'current_period_end' => $periodEnd,
+            'current_period_ends_at' => $periodEnd,
             'stripe_customer_id' => $subscription->customer ?? $user->stripe_customer_id,
             'stripe_subscription_id' => $subscription->id ?? $user->stripe_subscription_id,
             'plan' => $periodEnd && $periodEnd->isFuture() ? $user->plan : 'free',
@@ -163,5 +184,15 @@ class StripeWebhookService
     private function planFromSession(object $session): ?string
     {
         return $this->billing->planFromPrice($session->line_items->data[0]->price->id ?? null);
+    }
+
+    private function normalizeSubscriptionStatus(?string $stripeStatus, string $fallback): string
+    {
+        return match ($stripeStatus) {
+            'active', 'trialing' => 'active',
+            'past_due', 'unpaid', 'incomplete' => 'past_due',
+            'canceled', 'cancelled', 'incomplete_expired' => 'cancelled',
+            default => $fallback,
+        };
     }
 }

@@ -1,4 +1,21 @@
 <x-layouts.app title="infinitesugar">
+    @php
+        $contentSections = $pageContent ?? collect();
+        $rawSection = fn (string $key) => $contentSections->get($key);
+        $section = fn (string $key) => $rawSection($key)?->is_active ? $rawSection($key) : null;
+        $isHidden = fn (string $key) => (bool) ($rawSection($key) && ! $rawSection($key)->is_active);
+        $contentTitle = fn (string $key, string $fallback) => $section($key)?->title ?: $fallback;
+        $contentSubtitle = fn (string $key, string $fallback) => $section($key)?->subtitle ?: $fallback;
+        $contentBody = fn (string $key, string $fallback) => $section($key)?->body ?: $fallback;
+        $contentButton = fn (string $key, string $fallback) => $section($key)?->button_text ?: $fallback;
+        $contentImage = fn (string $key, string $fallback) => $section($key)?->image_url ?: asset($fallback);
+        $paragraphs = fn (string $text) => array_values(array_filter(preg_split('/\R{2,}|\R/', trim($text)) ?: [], fn ($line) => trim($line) !== ''));
+        $currentUser = auth()->user();
+        $isCurrentPlan = fn (string $plan) => $currentUser
+            && $currentUser->plan === $plan
+            && ($currentUser->billingStatus() === 'active' || (bool) $currentUser->paidThrough()?->isFuture());
+    @endphp
+
     <style>
         .landing-page {
             --landing-cream: #f8f2e4;
@@ -607,6 +624,20 @@
             margin-top: .35rem;
         }
 
+        .pricing-form {
+            margin: 0;
+        }
+
+        button.pricing-button {
+            border: 0;
+        }
+
+        .pricing-button:disabled {
+            cursor: not-allowed;
+            opacity: .72;
+            box-shadow: none;
+        }
+
         .faq-list {
             display: grid;
             gap: 1.1rem;
@@ -720,36 +751,40 @@
 
     <div class="landing-page" id="top">
         <div class="landing-shell">
+            @unless ($isHidden('hero'))
             <section class="landing-section" id="hero">
                 <div class="hero-grid">
                     <div class="hero-copy">
-                        <h1 class="landing-title">Most Zoom calls fade into silence.</h1>
-                        <p class="hero-summary">One private window sees what others miss — and speaks only to you.</p>
+                        <h1 class="landing-title">{{ $contentTitle('hero', 'Most Zoom calls fade into silence.') }}</h1>
+                        <p class="hero-summary">{{ $contentSubtitle('hero', 'One private window sees what others miss — and speaks only to you.') }}</p>
                         <p class="hero-positioning">Presence Intelligence for High-Stakes Conversations</p>
-                        <p class="hero-detail">Infinite Sugar reads presence, timing, and conversational movement while the call is still alive, then returns calm guidance that helps the next sentence land with control.</p>
+                        <p class="hero-detail">{!! nl2br(e($contentBody('hero', 'Infinite Sugar reads presence, timing, and conversational movement while the call is still alive, then returns calm guidance that helps the next sentence land with control.'))) !!}</p>
                         <div class="hero-actions">
-                            <a class="hero-button" href="{{ auth()->check() ? route('extension.download') : route('signup') }}">Install Extension</a>
+                            <a class="hero-button" href="{{ $section('hero')?->button_url ?: (auth()->check() ? route('extension.download') : route('signup')) }}">{{ $contentButton('hero', 'Install Extension') }}</a>
                         </div>
                     </div>
                     <div class="hero-video-frame">
-                        <video class="hero-video" autoplay muted loop playsinline controls poster="{{ asset('assets/product-coaching-preview.svg') }}">
+                        <video class="hero-video" autoplay muted loop playsinline controls poster="{{ $contentImage('hero', 'assets/product-coaching-preview.svg') }}">
                             <source src="{{ asset('assets/infinitesugar video (1).mp4') }}" type="video/mp4">
                         </video>
                     </div>
                 </div>
             </section>
+            @endunless
 
+            @unless ($isHidden('spark_intro'))
             <section class="landing-section" id="spark">
                 <div class="section-header">
-                    <div class="landing-eyebrow">First tier</div>
-                    <h2 class="section-heading">Spark keeps it simple: a floating window and real-time insights.</h2>
-                    <p class="section-copy">Spark is the first tier. It gives you live behavioral guidance in a small floating window that only you can see, so the next move is clearer before the moment passes.</p>
+                    <div class="landing-eyebrow">{{ $contentSubtitle('spark_intro', 'First tier') }}</div>
+                    <h2 class="section-heading">{{ $contentTitle('spark_intro', 'Spark keeps it simple: a floating window and real-time insights.') }}</h2>
+                    <p class="section-copy">{!! nl2br(e($contentBody('spark_intro', 'Spark is the first tier. It gives you live behavioral guidance in a small floating window that only you can see, so the next move is clearer before the moment passes.'))) !!}</p>
                 </div>
                 <div class="tier-grid">
+                    @unless ($isHidden('spark_live'))
                     <article class="tier-card">
-                        <div class="tier-label">Spark</div>
-                        <h3 class="tier-name">Live behavioral guidance. Private. Instant. Directional.</h3>
-                        <p class="section-copy">A small floating window overlays your Zoom call, visible only to you. In a second, it signals direction and presence while the moment still matters.</p>
+                        <div class="tier-label">{{ $contentSubtitle('spark_live', 'Spark') }}</div>
+                        <h3 class="tier-name">{{ $contentTitle('spark_live', 'Live behavioral guidance. Private. Instant. Directional.') }}</h3>
+                        <p class="section-copy">{!! nl2br(e($contentBody('spark_live', 'A small floating window overlays your Zoom call, visible only to you. In a second, it signals direction and presence while the moment still matters.'))) !!}</p>
                         <div class="tier-window">
                             <div class="window-bar">
                                 <span class="window-dots"><span></span><span></span><span></span></span>
@@ -759,35 +794,44 @@
                             <div class="window-message">Presence steady. Ask one clarifying question next.</div>
                         </div>
                     </article>
+                    @endunless
+                    @unless ($isHidden('spark_help'))
                     <article class="tier-card">
-                        <div class="tier-label">Why it helps</div>
-                        <h3 class="tier-name">Clear enough to use immediately.</h3>
-                        <p class="section-copy">Spark focuses on the live moment. It does not overwhelm users with extra layers. It gives private guidance and real-time insights while you stay in the call.</p>
-                        <p class="section-copy mt-3">Awareness is powerful. Knowing what drives impact begins with Forge.</p>
+                        <div class="tier-label">{{ $contentSubtitle('spark_help', 'Why it helps') }}</div>
+                        <h3 class="tier-name">{{ $contentTitle('spark_help', 'Clear enough to use immediately.') }}</h3>
+                        @foreach ($paragraphs($contentBody('spark_help', 'Spark focuses on the live moment. It does not overwhelm users with extra layers. It gives private guidance and real-time insights while you stay in the call.'."\n\n".'Awareness is powerful. Knowing what drives impact begins with Forge.')) as $index => $copy)
+                            <p class="section-copy {{ $index > 0 ? 'mt-3' : '' }}">{{ $copy }}</p>
+                        @endforeach
                         <ul class="feature-list">
                             <li>Private live window visible only to you</li>
                             <li>Real-time insights during the conversation</li>
                             <li>Simple prompts that help you adjust in the moment</li>
                         </ul>
                     </article>
+                    @endunless
                 </div>
             </section>
+            @endunless
 
+            @unless ($isHidden('forge_intro'))
             <section class="landing-section" id="forge">
                 <div class="section-header">
-                    <div class="landing-eyebrow">Second tier</div>
-                    <h2 class="section-heading">Forge adds strategic insight, reports, and charts without making the experience feel heavy.</h2>
-                    <p class="section-copy">Forge is the second tier. It carries Spark's live guidance into weekly reports, Sunday charts, measurable progress, and monthly progress badges so long-term patterns become easier to understand over time.</p>
+                    <div class="landing-eyebrow">{{ $contentSubtitle('forge_intro', 'Second tier') }}</div>
+                    <h2 class="section-heading">{{ $contentTitle('forge_intro', 'Forge adds strategic insight, reports, and charts without making the experience feel heavy.') }}</h2>
+                    <p class="section-copy">{!! nl2br(e($contentBody('forge_intro', "Forge is the second tier. It carries Spark's live guidance into weekly reports, Sunday charts, measurable progress, and monthly progress badges so long-term patterns become easier to understand over time."))) !!}</p>
                 </div>
                 <div class="tier-grid">
+                    @unless ($isHidden('forge_behavioral'))
                     <article class="tier-card">
-                        <div class="tier-label">Forge</div>
-                        <h3 class="tier-name">Behavioral intelligence that becomes easier to trust over time.</h3>
-                        <p class="section-copy">The live signal remains calm and private. The follow-through becomes more strategic, turning presence into patterns that feel visible, earned, and actionable.</p>
+                        <div class="tier-label">{{ $contentSubtitle('forge_behavioral', 'Forge') }}</div>
+                        <h3 class="tier-name">{{ $contentTitle('forge_behavioral', 'Behavioral intelligence that becomes easier to trust over time.') }}</h3>
+                        <p class="section-copy">{!! nl2br(e($contentBody('forge_behavioral', 'The live signal remains calm and private. The follow-through becomes more strategic, turning presence into patterns that feel visible, earned, and actionable.'))) !!}</p>
                     </article>
+                    @endunless
+                    @unless ($isHidden('forge_included'))
                     <article class="tier-card">
-                        <div class="tier-label">Included</div>
-                        <h3 class="tier-name">Live guidance, then quiet executive follow-through.</h3>
+                        <div class="tier-label">{{ $contentSubtitle('forge_included', 'Included') }}</div>
+                        <h3 class="tier-name">{{ $contentTitle('forge_included', 'Live guidance, then quiet executive follow-through.') }}</h3>
                         <div class="tier-metrics">
                             <div class="metric-card">
                                 <div class="metric-label">Guidance</div>
@@ -807,21 +851,26 @@
                             </div>
                         </div>
                     </article>
+                    @endunless
                 </div>
             </section>
+            @endunless
 
+            @unless ($isHidden('intelligence_intro'))
             <section class="landing-section" id="intelligence">
                 <div class="section-header">
-                    <div class="landing-eyebrow">Intelligence</div>
-                    <h2 class="section-heading">Forge Reports & Briefings</h2>
-                    <p class="section-copy">Plain-language deliverables that show what users receive after the live call.</p>
-                    <p class="section-copy">Forge customers receive weekly reports, Sunday charts, and monthly progress summaries. The goal is simple: make progress visible without making users decode complicated analytics.</p>
+                    <div class="landing-eyebrow">{{ $contentSubtitle('intelligence_intro', 'Intelligence') }}</div>
+                    <h2 class="section-heading">{{ $contentTitle('intelligence_intro', 'Forge Reports & Briefings') }}</h2>
+                    @foreach ($paragraphs($contentBody('intelligence_intro', 'Plain-language deliverables that show what users receive after the live call.'."\n".'Forge customers receive weekly reports, Sunday charts, and monthly progress summaries. The goal is simple: make progress visible without making users decode complicated analytics.')) as $copy)
+                        <p class="section-copy">{{ $copy }}</p>
+                    @endforeach
                 </div>
                 <div class="preview-grid">
+                    @unless ($isHidden('intelligence_live_signals'))
                     <article class="preview-card">
-                        <div class="card-kicker">Live Signals</div>
-                        <h3 class="preview-card-title">Turns live behavioral signals into measurable deal movement.</h3>
-                        <p class="preview-card-copy">Makes timing visible, where revenue is protected or lost. Built for operators responsible for outcomes.</p>
+                        <div class="card-kicker">{{ $contentSubtitle('intelligence_live_signals', 'Live Signals') }}</div>
+                        <h3 class="preview-card-title">{{ $contentTitle('intelligence_live_signals', 'Turns live behavioral signals into measurable deal movement.') }}</h3>
+                        <p class="preview-card-copy">{!! nl2br(e($contentBody('intelligence_live_signals', 'Makes timing visible, where revenue is protected or lost. Built for operators responsible for outcomes.'))) !!}</p>
                         <ul class="preview-list">
                             <li>Protect pricing power under pressure</li>
                             <li>Prevent authority erosion</li>
@@ -829,10 +878,12 @@
                             <li>Improve forecast accuracy through behavioral consistency</li>
                         </ul>
                     </article>
+                    @endunless
+                    @unless ($isHidden('intelligence_sunday'))
                     <article class="preview-card">
-                        <div class="card-kicker">Sunday Performance Brief · 9 PM</div>
-                        <h3 class="preview-card-title">11 execution signals. 2 decisive charts.</h3>
-                        <p class="preview-card-copy">Deal Momentum Verdict.<br>Clear leverage. Clear risk.</p>
+                        <div class="card-kicker">{{ $contentSubtitle('intelligence_sunday', 'Sunday Performance Brief · 9 PM') }}</div>
+                        <h3 class="preview-card-title">{{ $contentTitle('intelligence_sunday', '11 execution signals. 2 decisive charts.') }}</h3>
+                        <p class="preview-card-copy">{!! nl2br(e($contentBody('intelligence_sunday', "Deal Momentum Verdict.\nClear leverage. Clear risk."))) !!}</p>
                         <div class="preview-visual">
                             <div class="preview-bars">
                                 <span></span>
@@ -843,82 +894,109 @@
                         </div>
                         <p class="preview-meta">No dashboards. No noise.</p>
                     </article>
+                    @endunless
+                    @unless ($isHidden('intelligence_badge'))
                     <article class="preview-card">
-                        <div class="card-kicker">Monday Progress Summary · 9 AM</div>
-                        <h3 class="preview-card-title">Cumulative performance analysis. One earned badge.</h3>
-                        <p class="preview-card-copy">Awarded only when behavior consistently converts into measurable deal progress.</p>
+                        <div class="card-kicker">{{ $contentSubtitle('intelligence_badge', 'Monday Progress Summary · 9 AM') }}</div>
+                        <h3 class="preview-card-title">{{ $contentTitle('intelligence_badge', 'Cumulative performance analysis. One earned badge.') }}</h3>
+                        <p class="preview-card-copy">{!! nl2br(e($contentBody('intelligence_badge', 'Awarded only when behavior consistently converts into measurable deal progress.'))) !!}</p>
                         <div class="preview-visual">
                             <div class="badge-medallion">F</div>
                         </div>
                         <p class="preview-meta">No fluff. Just proof the edge is repeatable.</p>
                     </article>
+                    @endunless
                 </div>
             </section>
+            @endunless
 
+            @unless ($isHidden('executive_briefings'))
             <section class="landing-section" id="executive-briefings">
                 <div class="briefing-grid">
                     <div>
-                        <div class="landing-eyebrow">Executive Briefings</div>
-                        <h2 class="briefing-title">Reports and charts designed like luxury executive deliverables.</h2>
-                        <p class="briefing-copy mt-3">Every Forge output is interpretive before it is visual. The system frames what changed, why it matters, and what identity shift the user is building, without exposing internal mechanics or raw metric noise.</p>
+                        <div class="landing-eyebrow">{{ $contentSubtitle('executive_briefings', 'Executive Briefings') }}</div>
+                        <h2 class="briefing-title">{{ $contentTitle('executive_briefings', 'Reports and charts designed like luxury executive deliverables.') }}</h2>
+                        <p class="briefing-copy mt-3">{!! nl2br(e($contentBody('executive_briefings', 'Every Forge output is interpretive before it is visual. The system frames what changed, why it matters, and what identity shift the user is building, without exposing internal mechanics or raw metric noise.'))) !!}</p>
                     </div>
                     <figure class="briefing-image-card" aria-label="Executive report and chart preview">
                         <img
-                            src="{{ asset('images/briefings-and-reports.jpg') }}"
+                            src="{{ $contentImage('executive_briefings', 'images/briefings-and-reports.jpg') }}"
                             alt="InfiniteSugar executive report and chart preview"
                             loading="lazy"
                         >
                     </figure>
                 </div>
             </section>
+            @endunless
 
+            @unless ($isHidden('pricing_intro'))
             <section class="landing-section" id="pricing">
                 <div class="section-header">
-                    <div class="landing-eyebrow">Pricing</div>
-                    <h2 class="section-heading">Choose Spark for live guidance or Forge for guidance plus reports and charts.</h2>
-                    <p class="section-copy">Checkout stays inside the existing Stripe flow. Spark gives new users a 30-minute free call allowance before paid access continues.</p>
+                    <div class="landing-eyebrow">{{ $contentSubtitle('pricing_intro', 'Pricing') }}</div>
+                    <h2 class="section-heading">{{ $contentTitle('pricing_intro', 'Choose Spark for live guidance or Forge for guidance plus reports and charts.') }}</h2>
+                    <p class="section-copy">{!! nl2br(e($contentBody('pricing_intro', 'Checkout stays inside the existing Stripe flow. Spark gives new users a 30-minute free call allowance before paid access continues.'))) !!}</p>
                 </div>
                 <div class="pricing-grid">
+                    @unless ($isHidden('pricing_spark'))
                     <article class="pricing-card">
                         <div class="pricing-header">
                             <div>
-                                <div class="pricing-small">Spark</div>
-                                <h3 class="pricing-plan-name">Spark</h3>
+                                <div class="pricing-small">{{ $contentTitle('pricing_spark', 'Spark') }}</div>
+                                <h3 class="pricing-plan-name">{{ $contentTitle('pricing_spark', 'Spark') }}</h3>
                             </div>
-                            <div class="pricing-plan-price">$79/month</div>
+                            <div class="pricing-plan-price">{{ $contentSubtitle('pricing_spark', '$79/month') }}</div>
                         </div>
-                        <p class="pricing-copy">Includes one free 30-minute Spark call, then continued private live guidance through Stripe-managed access.</p>
+                        <p class="pricing-copy">{!! nl2br(e($contentBody('pricing_spark', 'Includes one free 30-minute Spark call, then continued private live guidance through Stripe-managed access.'))) !!}</p>
                         <ul class="pricing-list">
                             <li>Private floating window during the call</li>
                             <li>Real-time insights while the moment still matters</li>
                             <li>Simple live guidance without extra reporting layers</li>
                         </ul>
-                        <a class="pricing-button" href="{{ route('billing.checkout', 'spark') }}">Start Spark</a>
+                        @if ($isCurrentPlan('spark'))
+                            <button class="pricing-button" type="button" disabled>Current Spark Plan</button>
+                        @else
+                            <form class="pricing-form" method="post" action="{{ route('billing.checkout', 'spark') }}">
+                                @csrf
+                                <button class="pricing-button" type="submit">{{ $contentButton('pricing_spark', 'Start Spark') }}</button>
+                            </form>
+                        @endif
                     </article>
+                    @endunless
+                    @unless ($isHidden('pricing_forge'))
                     <article class="pricing-card">
                         <div class="pricing-header">
                             <div>
-                                <div class="pricing-small">Forge</div>
-                                <h3 class="pricing-plan-name">Forge</h3>
+                                <div class="pricing-small">{{ $contentTitle('pricing_forge', 'Forge') }}</div>
+                                <h3 class="pricing-plan-name">{{ $contentTitle('pricing_forge', 'Forge') }}</h3>
                             </div>
-                            <div class="pricing-plan-price">$249/month</div>
+                            <div class="pricing-plan-price">{{ $contentSubtitle('pricing_forge', '$249/month') }}</div>
                         </div>
-                        <p class="pricing-copy">For operators who need live insights plus weekly reports, Sunday charts, and Monday progress summaries.</p>
+                        <p class="pricing-copy">{!! nl2br(e($contentBody('pricing_forge', 'For operators who need live insights plus weekly reports, Sunday charts, and Monday progress summaries.'))) !!}</p>
                         <ul class="pricing-list">
                             <li>Includes the live behavioral signals from Spark</li>
                             <li>Adds executive reporting that makes progress visible</li>
                             <li>Reinforces repeatable behavior through earned badges</li>
                         </ul>
-                        <a class="pricing-button" href="{{ route('billing.checkout', 'forge') }}">Start Forge</a>
+                        @if ($isCurrentPlan('forge'))
+                            <button class="pricing-button" type="button" disabled>Current Forge Plan</button>
+                        @else
+                            <form class="pricing-form" method="post" action="{{ route('billing.checkout', 'forge') }}">
+                                @csrf
+                                <button class="pricing-button" type="submit">{{ $contentButton('pricing_forge', 'Start Forge') }}</button>
+                            </form>
+                        @endif
                     </article>
+                    @endunless
                 </div>
             </section>
+            @endunless
 
+            @unless ($isHidden('faq_intro'))
             <section class="landing-section" id="faq">
                 <div class="section-header">
-                    <div class="landing-eyebrow">FAQ</div>
-                    <h2 class="section-heading">Simple answers on the same page.</h2>
-                    <p class="section-copy">Users can keep scrolling and get the core answers without leaving the landing experience.</p>
+                    <div class="landing-eyebrow">{{ $contentSubtitle('faq_intro', 'FAQ') }}</div>
+                    <h2 class="section-heading">{{ $contentTitle('faq_intro', 'Simple answers on the same page.') }}</h2>
+                    <p class="section-copy">{!! nl2br(e($contentBody('faq_intro', 'Users can keep scrolling and get the core answers without leaving the landing experience.'))) !!}</p>
                 </div>
                 <div class="faq-list">
                     @foreach ([
@@ -937,6 +1015,7 @@
                     @endforeach
                 </div>
             </section>
+            @endunless
         </div>
     </div>
 </x-layouts.app>

@@ -1,10 +1,21 @@
 <x-layouts.app title="Privacy Policy | infinitesugar">
+    @php
+        $contentSections = $pageContent ?? collect();
+        $rawSection = fn (string $key) => $contentSections->get($key);
+        $section = fn (string $key) => $rawSection($key)?->is_active ? $rawSection($key) : null;
+        $isHidden = fn (string $key) => (bool) ($rawSection($key) && ! $rawSection($key)->is_active);
+        $contentTitle = fn (string $key, string $fallback) => $section($key)?->title ?: $fallback;
+        $contentSubtitle = fn (string $key, string $fallback) => $section($key)?->subtitle ?: $fallback;
+        $contentBody = fn (string $key, string $fallback) => $section($key)?->body ?: $fallback;
+    @endphp
+
+    @unless ($isHidden('hero'))
     <section class="legal-hero">
         <div class="legal-hero-grid">
             <div class="legal-hero-copy">
-                <div class="eyebrow">Privacy Policy</div>
-                <h1 class="legal-hero-title">Privacy Policy</h1>
-                <p class="legal-hero-summary">Infinite Sugar is built around private, local behavioral insights during Zoom calls. This page explains what information we collect, what stays on your device, and how we protect your account data.</p>
+                <div class="eyebrow">{{ $contentSubtitle('hero', 'Privacy Policy') }}</div>
+                <h1 class="legal-hero-title">{{ $contentTitle('hero', 'Privacy Policy') }}</h1>
+                <p class="legal-hero-summary">{!! nl2br(e($contentBody('hero', 'Infinite Sugar is built around private, local behavioral insights during Zoom calls. This page explains what information we collect, what stays on your device, and how we protect your account data.'))) !!}</p>
             </div>
             <div class="legal-hero-meta">
                 <div class="legal-meta-card">
@@ -18,9 +29,12 @@
             </div>
         </div>
     </section>
+    @endunless
 
     <section class="legal-doc py-5 mx-auto">
-        <p>Infinite Sugar is a Chrome extension providing private, local behavioral insights during Zoom calls. All analysis happens locally on your device. No raw video, audio, or identifiable biometric data is ever recorded, stored, or transmitted.</p>
+        @unless ($isHidden('intro'))
+            <p>{!! nl2br(e($contentBody('intro', 'Infinite Sugar is a Chrome extension providing private, local behavioral insights during Zoom calls. All analysis happens locally on your device. No raw video, audio, or identifiable biometric data is ever recorded, stored, or transmitted.'))) !!}</p>
+        @endunless
         <p>PeabodyandFrenchCoffee LLC ("we," "us," or "our") operates the Infinite Sugar Chrome extension and website. This Privacy Notice explains how we collect, use, and protect your information. We are committed to transparency, user trust, and compliance with applicable laws, including the California Consumer Privacy Act (CCPA), General Data Protection Regulation (GDPR), and Zoom's Terms of Service.</p>
 
         <h2>1. Data Controller & Contact</h2>
@@ -101,7 +115,9 @@
         <h2>13. Disclaimer</h2>
         <p>Infinite Sugar is designed as a private self-improvement tool. We do not monitor, track, or evaluate individuals on behalf of third parties.</p>
 
-        <h2>14. Contact Us</h2>
-        <p>PeabodyandFrenchCoffee LLC<br>Email: contact@infinitesugar.com</p>
+        @unless ($isHidden('contact'))
+            <h2>{{ $contentTitle('contact', '14. Contact Us') }}</h2>
+            <p>{!! nl2br(e($contentBody('contact', "PeabodyandFrenchCoffee LLC\nEmail: contact@infinitesugar.com"))) !!}</p>
+        @endunless
     </section>
 </x-layouts.app>

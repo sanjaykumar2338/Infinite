@@ -1,0 +1,333 @@
+<?php
+
+namespace App\Support;
+
+use App\Models\PageContent;
+
+class PageContentDefaults
+{
+    public static function pageLabels(): array
+    {
+        return [
+            'home' => 'Home',
+            'pricing' => 'Pricing',
+            'spark' => 'Spark',
+            'forge' => 'Forge',
+            'reports' => 'Reports / Executive Briefings',
+            'privacy' => 'Privacy',
+            'terms' => 'Terms',
+        ];
+    }
+
+    public static function ensureRecords(): void
+    {
+        foreach (self::sections() as $index => $section) {
+            PageContent::query()->firstOrCreate(
+                [
+                    'page_key' => $section['page_key'],
+                    'section_key' => $section['section_key'],
+                ],
+                [
+                    'title' => $section['title'] ?? null,
+                    'subtitle' => $section['subtitle'] ?? null,
+                    'body' => $section['body'] ?? null,
+                    'image_path' => $section['image_path'] ?? null,
+                    'button_text' => $section['button_text'] ?? null,
+                    'button_url' => $section['button_url'] ?? null,
+                    'sort_order' => $section['sort_order'] ?? (($index + 1) * 10),
+                    'is_active' => $section['is_active'] ?? true,
+                ],
+            );
+        }
+    }
+
+    public static function sections(): array
+    {
+        return [
+            [
+                'page_key' => 'home',
+                'section_key' => 'hero',
+                'title' => 'Most Zoom calls fade into silence.',
+                'subtitle' => 'One private window sees what others miss — and speaks only to you.',
+                'body' => 'Infinite Sugar reads presence, timing, and conversational movement while the call is still alive, then returns calm guidance that helps the next sentence land with control.',
+                'button_text' => 'Install Extension',
+                'sort_order' => 10,
+            ],
+            [
+                'page_key' => 'home',
+                'section_key' => 'spark_intro',
+                'title' => 'Spark keeps it simple: a floating window and real-time insights.',
+                'subtitle' => 'First tier',
+                'body' => 'Spark is the first tier. It gives you live behavioral guidance in a small floating window that only you can see, so the next move is clearer before the moment passes.',
+                'sort_order' => 20,
+            ],
+            [
+                'page_key' => 'home',
+                'section_key' => 'spark_live',
+                'title' => 'Live behavioral guidance. Private. Instant. Directional.',
+                'subtitle' => 'Spark',
+                'body' => 'A small floating window overlays your Zoom call, visible only to you. In a second, it signals direction and presence while the moment still matters.',
+                'sort_order' => 30,
+            ],
+            [
+                'page_key' => 'home',
+                'section_key' => 'spark_help',
+                'title' => 'Clear enough to use immediately.',
+                'subtitle' => 'Why it helps',
+                'body' => 'Spark focuses on the live moment. It does not overwhelm users with extra layers. It gives private guidance and real-time insights while you stay in the call.'."\n\n".'Awareness is powerful. Knowing what drives impact begins with Forge.',
+                'sort_order' => 40,
+            ],
+            [
+                'page_key' => 'home',
+                'section_key' => 'forge_intro',
+                'title' => 'Forge adds strategic insight, reports, and charts without making the experience feel heavy.',
+                'subtitle' => 'Second tier',
+                'body' => "Forge is the second tier. It carries Spark's live guidance into weekly reports, Sunday charts, measurable progress, and monthly progress badges so long-term patterns become easier to understand over time.",
+                'sort_order' => 50,
+            ],
+            [
+                'page_key' => 'home',
+                'section_key' => 'forge_behavioral',
+                'title' => 'Behavioral intelligence that becomes easier to trust over time.',
+                'subtitle' => 'Forge',
+                'body' => 'The live signal remains calm and private. The follow-through becomes more strategic, turning presence into patterns that feel visible, earned, and actionable.',
+                'sort_order' => 60,
+            ],
+            [
+                'page_key' => 'home',
+                'section_key' => 'forge_included',
+                'title' => 'Live guidance, then quiet executive follow-through.',
+                'subtitle' => 'Included',
+                'sort_order' => 70,
+            ],
+            [
+                'page_key' => 'home',
+                'section_key' => 'intelligence_intro',
+                'title' => 'Forge Reports & Briefings',
+                'subtitle' => 'Intelligence',
+                'body' => 'Plain-language deliverables that show what users receive after the live call.'."\n".'Forge customers receive weekly reports, Sunday charts, and monthly progress summaries. The goal is simple: make progress visible without making users decode complicated analytics.',
+                'sort_order' => 80,
+            ],
+            [
+                'page_key' => 'home',
+                'section_key' => 'intelligence_live_signals',
+                'title' => 'Turns live behavioral signals into measurable deal movement.',
+                'subtitle' => 'Live Signals',
+                'body' => 'Makes timing visible, where revenue is protected or lost. Built for operators responsible for outcomes.',
+                'sort_order' => 90,
+            ],
+            [
+                'page_key' => 'home',
+                'section_key' => 'intelligence_sunday',
+                'title' => '11 execution signals. 2 decisive charts.',
+                'subtitle' => 'Sunday Performance Brief · 9 PM',
+                'body' => 'Deal Momentum Verdict.'."\n".'Clear leverage. Clear risk.',
+                'sort_order' => 100,
+            ],
+            [
+                'page_key' => 'home',
+                'section_key' => 'intelligence_badge',
+                'title' => 'Cumulative performance analysis. One earned badge.',
+                'subtitle' => 'Monday Progress Summary · 9 AM',
+                'body' => 'Awarded only when behavior consistently converts into measurable deal progress.',
+                'sort_order' => 110,
+            ],
+            [
+                'page_key' => 'home',
+                'section_key' => 'executive_briefings',
+                'title' => 'Reports and charts designed like luxury executive deliverables.',
+                'subtitle' => 'Executive Briefings',
+                'body' => 'Every Forge output is interpretive before it is visual. The system frames what changed, why it matters, and what identity shift the user is building, without exposing internal mechanics or raw metric noise.',
+                'image_path' => 'images/briefings-and-reports.jpg',
+                'sort_order' => 120,
+            ],
+            [
+                'page_key' => 'home',
+                'section_key' => 'pricing_intro',
+                'title' => 'Choose Spark for live guidance or Forge for guidance plus reports and charts.',
+                'subtitle' => 'Pricing',
+                'body' => 'Checkout stays inside the existing Stripe flow. Spark gives new users a 30-minute free call allowance before paid access continues.',
+                'sort_order' => 130,
+            ],
+            [
+                'page_key' => 'home',
+                'section_key' => 'pricing_spark',
+                'title' => 'Spark',
+                'subtitle' => '$79/month',
+                'body' => 'Includes one free 30-minute Spark call, then continued private live guidance through Stripe-managed access.',
+                'button_text' => 'Start Spark',
+                'sort_order' => 140,
+            ],
+            [
+                'page_key' => 'home',
+                'section_key' => 'pricing_forge',
+                'title' => 'Forge',
+                'subtitle' => '$249/month',
+                'body' => 'For operators who need live insights plus weekly reports, Sunday charts, and Monday progress summaries.',
+                'button_text' => 'Start Forge',
+                'sort_order' => 150,
+            ],
+            [
+                'page_key' => 'home',
+                'section_key' => 'faq_intro',
+                'title' => 'Simple answers on the same page.',
+                'subtitle' => 'FAQ',
+                'body' => 'Users can keep scrolling and get the core answers without leaving the landing experience.',
+                'sort_order' => 160,
+            ],
+            [
+                'page_key' => 'pricing',
+                'section_key' => 'hero',
+                'title' => "You’re not choosing features.\nYou’re choosing certainty.",
+                'sort_order' => 10,
+            ],
+            [
+                'page_key' => 'pricing',
+                'section_key' => 'spark_plan',
+                'title' => 'Spark',
+                'subtitle' => '$79/month',
+                'body' => "Includes 1 free live call · 30 minutes\n\nExperience real-time guidance before committing.\nMost people know within one call.",
+                'button_text' => 'Start Spark — Checkout',
+                'sort_order' => 20,
+            ],
+            [
+                'page_key' => 'pricing',
+                'section_key' => 'forge_plan',
+                'title' => 'Forge',
+                'subtitle' => '$249/month',
+                'body' => "For operators who need to know:\n\nWhen leverage forms.\nWhen hesitation is costly.\nWhen to move — and when to hold.\n\nIt doesn’t add complexity.\nIt removes second-guessing.\nDecisions get quieter.\nTiming gets sharper.\nResults compound.",
+                'button_text' => 'Start Forge — Checkout',
+                'sort_order' => 30,
+            ],
+            [
+                'page_key' => 'pricing',
+                'section_key' => 'note',
+                'title' => 'No surprise subscription after the free call.',
+                'body' => 'Spark trial usage is tracked by Laravel. Paid access starts only after the user chooses to upgrade through Stripe Checkout.',
+                'button_text' => 'Read About Spark',
+                'button_url' => '/spark',
+                'sort_order' => 40,
+            ],
+            [
+                'page_key' => 'spark',
+                'section_key' => 'hero',
+                'title' => 'Live behavioral guidance before the moment passes.',
+                'subtitle' => 'Spark',
+                'body' => 'Spark gives every new user one private 30-minute trial call. After the trial, continued access requires a manual Stripe upgrade.',
+                'button_text' => 'Get Started',
+                'sort_order' => 10,
+            ],
+            [
+                'page_key' => 'spark',
+                'section_key' => 'usage_card',
+                'title' => 'Spark free call',
+                'subtitle' => '30 min',
+                'body' => 'Backend-owned minute tracking'."\n".'No frontend plan or status trust'."\n".'No automatic subscription after the free call',
+                'sort_order' => 20,
+            ],
+            [
+                'page_key' => 'forge',
+                'section_key' => 'hero',
+                'title' => 'FORGE',
+                'subtitle' => 'Turns live behavioral signals into measurable deal movement.',
+                'body' => 'Makes timing visible — where revenue is protected or lost.',
+                'sort_order' => 10,
+            ],
+            [
+                'page_key' => 'forge',
+                'section_key' => 'signals',
+                'body' => "Composure shifting.\nAuthority strengthening.\nProbability changing.\nDuring it.",
+                'sort_order' => 20,
+            ],
+            [
+                'page_key' => 'forge',
+                'section_key' => 'action',
+                'title' => 'In Action',
+                'body' => "Protect pricing power under pressure\nPrevent authority erosion\nTime the close when control is strongest\nImprove forecast accuracy through behavioral consistency",
+                'sort_order' => 30,
+            ],
+            [
+                'page_key' => 'reports',
+                'section_key' => 'hero',
+                'title' => 'Reports that make progress visible.',
+                'subtitle' => 'Forge deliverables',
+                'body' => 'Admin-managed uploads support weekly reports, Sunday charts, and monthly badge summaries now, with room for automation later.',
+                'image_path' => 'images/briefings-and-reports.jpg',
+                'sort_order' => 10,
+            ],
+            [
+                'page_key' => 'reports',
+                'section_key' => 'weekly_reports',
+                'title' => 'Weekly Reports',
+                'subtitle' => 'W',
+                'body' => 'Summaries of behavioral signals, coaching opportunities, and progress notes delivered for Forge customers.',
+                'sort_order' => 20,
+            ],
+            [
+                'page_key' => 'reports',
+                'section_key' => 'sunday_charts',
+                'title' => 'Sunday Charts',
+                'subtitle' => '2',
+                'body' => 'Two visual KPI snapshots every Sunday at 9 PM for trend tracking and review.',
+                'sort_order' => 30,
+            ],
+            [
+                'page_key' => 'reports',
+                'section_key' => 'monthly_badges',
+                'title' => 'Monthly Badge Reports',
+                'subtitle' => 'B',
+                'body' => 'Milestone reports that turn progress into a clear retention moment.',
+                'sort_order' => 40,
+            ],
+            [
+                'page_key' => 'privacy',
+                'section_key' => 'hero',
+                'title' => 'Privacy Policy',
+                'subtitle' => 'Privacy Policy',
+                'body' => 'Infinite Sugar is built around private, local behavioral insights during Zoom calls. This page explains what information we collect, what stays on your device, and how we protect your account data.',
+                'sort_order' => 10,
+            ],
+            [
+                'page_key' => 'privacy',
+                'section_key' => 'intro',
+                'body' => 'Infinite Sugar is a Chrome extension providing private, local behavioral insights during Zoom calls. All analysis happens locally on your device. No raw video, audio, or identifiable biometric data is ever recorded, stored, or transmitted.',
+                'sort_order' => 20,
+            ],
+            [
+                'page_key' => 'privacy',
+                'section_key' => 'contact',
+                'title' => '14. Contact Us',
+                'body' => "PeabodyandFrenchCoffee LLC\nEmail: contact@infinitesugar.com",
+                'sort_order' => 30,
+            ],
+            [
+                'page_key' => 'terms',
+                'section_key' => 'hero',
+                'title' => 'Terms and Conditions',
+                'subtitle' => 'Terms & Conditions',
+                'body' => 'These terms cover how Infinite Sugar works, how subscriptions are handled, and the rules for using the website and Chrome extension in a clear, straightforward way.',
+                'sort_order' => 10,
+            ],
+            [
+                'page_key' => 'terms',
+                'section_key' => 'intro',
+                'body' => 'We believe in clarity, fairness, and transparency. These Terms explain how Infinite Sugar works and how we protect both you and our platform.',
+                'sort_order' => 20,
+            ],
+            [
+                'page_key' => 'terms',
+                'section_key' => 'billing',
+                'title' => 'IV. Free Trial and Subscription Billing',
+                'body' => 'Spark includes one 30-minute free trial call. Paid subscriptions are billed monthly in advance through Stripe and renew unless canceled.',
+                'sort_order' => 30,
+            ],
+            [
+                'page_key' => 'terms',
+                'section_key' => 'contact',
+                'title' => 'Contact Us',
+                'body' => "PeabodyandFrenchCoffee LLC\nEmail: contact@infinitesugar.com",
+                'sort_order' => 40,
+            ],
+        ];
+    }
+}

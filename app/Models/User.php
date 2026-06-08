@@ -25,8 +25,11 @@ class User extends Authenticatable
         'password',
         'plan',
         'status',
+        'subscription_status',
         'stripe_customer_id',
         'stripe_subscription_id',
+        'trial_ends_at',
+        'current_period_ends_at',
         'current_period_end',
         'free_call_used',
         'call_minutes_used',
@@ -52,6 +55,8 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'trial_ends_at' => 'datetime',
+            'current_period_ends_at' => 'datetime',
             'current_period_end' => 'datetime',
             'free_call_used' => 'boolean',
             'call_minutes_used' => 'integer',
@@ -87,5 +92,17 @@ class User extends Authenticatable
     public function hasTestingAccess(): bool
     {
         return in_array($this->role, ['admin', 'tester'], true);
+    }
+
+    public function billingStatus(): string
+    {
+        return $this->status !== 'free'
+            ? $this->status
+            : ($this->subscription_status ?: $this->status);
+    }
+
+    public function paidThrough(): mixed
+    {
+        return $this->current_period_ends_at ?: $this->current_period_end;
     }
 }

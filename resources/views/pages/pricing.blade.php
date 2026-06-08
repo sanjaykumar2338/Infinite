@@ -1,4 +1,23 @@
 <x-layouts.app title="Pricing | infinitesugar">
+    @php
+        $contentSections = $pageContent ?? collect();
+        $rawSection = fn (string $key) => $contentSections->get($key);
+        $section = fn (string $key) => $rawSection($key)?->is_active ? $rawSection($key) : null;
+        $isHidden = fn (string $key) => (bool) ($rawSection($key) && ! $rawSection($key)->is_active);
+        $contentTitle = fn (string $key, string $fallback) => $section($key)?->title ?: $fallback;
+        $contentSubtitle = fn (string $key, string $fallback) => $section($key)?->subtitle ?: $fallback;
+        $contentBody = fn (string $key, string $fallback) => $section($key)?->body ?: $fallback;
+        $contentButton = fn (string $key, string $fallback) => $section($key)?->button_text ?: $fallback;
+        $paragraphs = fn (string $text) => array_values(array_filter(preg_split('/\R{2,}/', trim($text)) ?: [], fn ($line) => trim($line) !== ''));
+        $lines = fn (string $text) => array_values(array_filter(preg_split('/\R/', trim($text)) ?: [], fn ($line) => trim($line) !== ''));
+        $currentUser = auth()->user();
+        $isCurrentPlan = fn (string $plan) => $currentUser
+            && $currentUser->plan === $plan
+            && ($currentUser->billingStatus() === 'active' || (bool) $currentUser->paidThrough()?->isFuture());
+        $sparkCopy = $paragraphs($contentBody('spark_plan', "Includes 1 free live call · 30 minutes\n\nExperience real-time guidance before committing.\nMost people know within one call."));
+        $forgeCopy = $paragraphs($contentBody('forge_plan', "For operators who need to know:\n\nWhen leverage forms.\nWhen hesitation is costly.\nWhen to move — and when to hold.\n\nIt doesn’t add complexity.\nIt removes second-guessing.\nDecisions get quieter.\nTiming gets sharper.\nResults compound."));
+    @endphp
+
     <style>
         .pricing-page {
             width: 100vw;
@@ -98,9 +117,25 @@
             padding: .85rem 1.2rem;
         }
 
+        .pricing-card-form {
+            margin-top: auto;
+        }
+
+        .pricing-card-form .pricing-card-action,
+        button.pricing-card-action {
+            width: 100%;
+            border-color: #c7af69;
+        }
+
         .pricing-card-action:hover {
             background: #96763b;
             color: #fffdf8;
+        }
+
+        .pricing-card-action:disabled {
+            cursor: not-allowed;
+            opacity: .72;
+            box-shadow: none;
         }
 
         .pricing-note {
@@ -165,55 +200,78 @@
             <div class="alert alert-warning mb-4">Checkout was cancelled. Your current access has not changed.</div>
         @endif
 
-        <h1 class="pricing-page-title">You&rsquo;re not choosing features.<br>You&rsquo;re choosing certainty.</h1>
+        @unless ($isHidden('hero'))
+            <h1 class="pricing-page-title">{!! nl2br(e($contentTitle('hero', "You’re not choosing features.\nYou’re choosing certainty."))) !!}</h1>
+        @endunless
 
         <div class="pricing-grid">
+            @unless ($isHidden('spark_plan'))
             <article class="pricing-card-large">
                 <div class="pricing-card-head">
-                    <h2 class="pricing-card-name">Spark</h2>
-                    <div class="pricing-card-price">$79/month</div>
+                    <h2 class="pricing-card-name">{{ $contentTitle('spark_plan', 'Spark') }}</h2>
+                    <div class="pricing-card-price">{{ $contentSubtitle('spark_plan', '$79/month') }}</div>
                 </div>
 
-                <p class="pricing-card-copy">Includes 1 free live call · 30 minutes</p>
-                <p class="pricing-card-copy">Experience real-time guidance before committing.<br>Most people know within one call.</p>
+                @foreach ($sparkCopy as $copy)
+                    <p class="pricing-card-copy">{!! nl2br(e($copy)) !!}</p>
+                @endforeach
 
-                <a class="pricing-card-action" href="{{ route('billing.checkout', 'spark') }}">
-                    @auth
-                        Start Spark — Checkout
-                    @else
-                        Start Spark — Sign in to Checkout
-                    @endauth
-                </a>
+                @if ($isCurrentPlan('spark'))
+                    <button class="pricing-card-action" type="button" disabled>Current Spark Plan</button>
+                @else
+                    <form class="pricing-card-form" method="post" action="{{ route('billing.checkout', 'spark') }}">
+                        @csrf
+                        <button class="pricing-card-action" type="submit">
+                            @auth
+                                {{ $contentButton('spark_plan', 'Start Spark — Checkout') }}
+                            @else
+                                Start Spark — Sign in to Checkout
+                            @endauth
+                        </button>
+                    </form>
+                @endif
             </article>
+            @endunless
 
+            @unless ($isHidden('forge_plan'))
             <article class="pricing-card-large featured">
                 <div class="pricing-card-head">
-                    <h2 class="pricing-card-name">Forge</h2>
-                    <div class="pricing-card-price">$249/month</div>
+                    <h2 class="pricing-card-name">{{ $contentTitle('forge_plan', 'Forge') }}</h2>
+                    <div class="pricing-card-price">{{ $contentSubtitle('forge_plan', '$249/month') }}</div>
                 </div>
 
-                <p class="pricing-card-copy">For operators who need to know:</p>
+                <p class="pricing-card-copy">{!! nl2br(e($forgeCopy[0] ?? 'For operators who need to know:')) !!}</p>
                 <ul class="pricing-card-list">
-                    <li>When leverage forms.</li>
-                    <li>When hesitation is costly.</li>
-                    <li>When to move — and when to hold.</li>
+                    @foreach ($lines($forgeCopy[1] ?? "When leverage forms.\nWhen hesitation is costly.\nWhen to move — and when to hold.") as $line)
+                        <li>{{ $line }}</li>
+                    @endforeach
                 </ul>
-                <p class="pricing-card-copy">It doesn&rsquo;t add complexity.<br>It removes second-guessing.<br>Decisions get quieter.<br>Timing gets sharper.<br>Results compound.</p>
+                <p class="pricing-card-copy">{!! nl2br(e($forgeCopy[2] ?? "It doesn’t add complexity.\nIt removes second-guessing.\nDecisions get quieter.\nTiming gets sharper.\nResults compound.")) !!}</p>
 
-                <a class="pricing-card-action" href="{{ route('billing.checkout', 'forge') }}">
-                    @auth
-                        Start Forge — Checkout
-                    @else
-                        Start Forge — Sign in to Checkout
-                    @endauth
-                </a>
+                @if ($isCurrentPlan('forge'))
+                    <button class="pricing-card-action" type="button" disabled>Current Forge Plan</button>
+                @else
+                    <form class="pricing-card-form" method="post" action="{{ route('billing.checkout', 'forge') }}">
+                        @csrf
+                        <button class="pricing-card-action" type="submit">
+                            @auth
+                                {{ $contentButton('forge_plan', 'Start Forge — Checkout') }}
+                            @else
+                                Start Forge — Sign in to Checkout
+                            @endauth
+                        </button>
+                    </form>
+                @endif
             </article>
+            @endunless
         </div>
 
+        @unless ($isHidden('note'))
         <div class="pricing-note">
-            <h2>No surprise subscription after the free call.</h2>
-            <p>Spark trial usage is tracked by Laravel. Paid access starts only after the user chooses to upgrade through Stripe Checkout.</p>
-            <a class="btn btn-soft" href="{{ route('spark') }}">Read About Spark</a>
+            <h2>{{ $contentTitle('note', 'No surprise subscription after the free call.') }}</h2>
+            <p>{!! nl2br(e($contentBody('note', 'Spark trial usage is tracked by Laravel. Paid access starts only after the user chooses to upgrade through Stripe Checkout.'))) !!}</p>
+            <a class="btn btn-soft" href="{{ $section('note')?->button_url ?: route('spark') }}">{{ $contentButton('note', 'Read About Spark') }}</a>
         </div>
+        @endunless
     </section>
 </x-layouts.app>

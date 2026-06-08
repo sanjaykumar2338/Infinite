@@ -28,8 +28,8 @@
     <section class="row g-4 mb-5">
         @foreach ([
             ['Current plan', ucfirst($user->plan), 'Plan managed by Stripe or admin'],
-            ['Status', ucfirst(str_replace('_', ' ', $user->status)), 'Billing/access state'],
-            ['Period end', optional($user->current_period_end)->toFormattedDateString() ?: 'n/a', 'Paid-through date from Stripe'],
+            ['Status', ucfirst(str_replace('_', ' ', $user->billingStatus())), 'Billing/access state'],
+            ['Period end', optional($user->paidThrough())->toFormattedDateString() ?: 'n/a', 'Paid-through date from Stripe'],
             ['Free call used', $access['free_call_used'] ? 'Yes' : 'No', 'Spark trial tracking'],
             ['Free call minutes used', $access['call_minutes_used'].' / '.$access['free_call_allowance_minutes'], 'Backend-counted Spark trial minutes'],
             ['Remaining free minutes', $access['remaining_minutes'] ?? 'Unlimited', 'Free Spark call balance'],

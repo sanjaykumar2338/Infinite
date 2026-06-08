@@ -59,6 +59,7 @@ class UserAuthController extends Controller
             'name' => $firebaseUser['name'] ?: $firebaseUser['email'],
             'plan' => 'free',
             'status' => 'free',
+            'subscription_status' => 'free',
             'role' => 'user',
         ]);
 

@@ -2,8 +2,10 @@
 
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\WebsiteContentController;
 use App\Http\Controllers\BillingCheckoutController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\UserAuthController;
@@ -44,7 +46,7 @@ Route::get('/extension/download', function () {
 
     return response()->download($archive, 'infinite-sugar-extension.zip');
 })->middleware('auth')->name('extension.download');
-Route::get('/billing/checkout/{plan}', BillingCheckoutController::class)
+Route::match(['get', 'post'], '/billing/checkout/{plan}', BillingCheckoutController::class)
     ->whereIn('plan', ['spark', 'forge'])
     ->name('billing.checkout');
 
@@ -55,9 +57,15 @@ Route::post('/admin/logout', [AuthController::class, 'destroy'])->name('admin.lo
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', DashboardController::class)->name('dashboard');
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::patch('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
     Route::patch('/users/{user}', [UserController::class, 'update'])->name('users.update');
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
     Route::post('/reports', [ReportController::class, 'store'])->name('reports.store');
     Route::delete('/reports/{type}/{id}', [ReportController::class, 'destroy'])->name('reports.destroy');
+    Route::get('/website-content', [WebsiteContentController::class, 'index'])->name('website-content.index');
+    Route::get('/website-content/{pageContent}/edit', [WebsiteContentController::class, 'edit'])->name('website-content.edit');
+    Route::patch('/website-content/{pageContent}', [WebsiteContentController::class, 'update'])->name('website-content.update');
 });

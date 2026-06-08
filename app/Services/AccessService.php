@@ -11,14 +11,19 @@ class AccessService
     public function check(User $user): array
     {
         $remainingMinutes = max(0, self::FREE_TRIAL_MINUTES - $user->call_minutes_used);
+        $billingStatus = $user->billingStatus();
+        $paidThrough = $user->paidThrough();
         $paidAccess = $this->hasPaidAccess($user);
         $fullAccess = $user->hasTestingAccess() || ($user->plan === 'forge' && $paidAccess);
         $paidSparkAccess = $user->plan === 'spark' && $paidAccess;
 
         return [
             'plan' => $user->plan,
-            'status' => $user->status,
-            'current_period_end' => $user->current_period_end,
+            'status' => $billingStatus,
+            'subscription_status' => $billingStatus,
+            'current_period_end' => $paidThrough,
+            'current_period_ends_at' => $paidThrough,
+            'trial_ends_at' => $user->trial_ends_at,
             'can_use_live_insights' => $fullAccess || $paidSparkAccess,
             'can_use_reports' => $fullAccess,
             'can_use_charts' => $fullAccess,
@@ -38,12 +43,15 @@ class AccessService
 
     private function hasPaidAccess(User $user): bool
     {
-        if ($user->status === 'active') {
+        $billingStatus = $user->billingStatus();
+        $paidThrough = $user->paidThrough();
+
+        if ($billingStatus === 'active') {
             return true;
         }
 
-        return in_array($user->status, ['cancelled', 'past_due'], true)
-            && $user->current_period_end
-            && $user->current_period_end->isFuture();
+        return in_array($billingStatus, ['cancelled', 'past_due'], true)
+            && $paidThrough
+            && $paidThrough->isFuture();
     }
 }

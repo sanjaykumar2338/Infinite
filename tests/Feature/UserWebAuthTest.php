@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\BadgeReport;
+use App\Models\PageContent;
 use App\Models\Report;
 use App\Models\ReportChart;
 use App\Models\User;
@@ -13,6 +14,7 @@ use App\Support\ForgeSundayWeeklyBrief;
 use App\Support\ForgeWeeklyHeatmap;
 use App\Support\ForgeWeeklyTimeline;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Stripe\Checkout\Session;
 use Stripe\Exception\InvalidRequestException;
 use Tests\TestCase;
@@ -643,8 +645,104 @@ class UserWebAuthTest extends TestCase
         $this->fakeStripeCheckout();
 
         $this->actingAs($user)
-            ->get('/billing/checkout/forge')
+            ->post('/billing/checkout/forge')
             ->assertRedirect('https://checkout.stripe.test/session');
+    }
+
+    public function test_pricing_labels_current_active_plan(): void
+    {
+        $user = User::factory()->create([
+            'plan' => 'spark',
+            'status' => 'active',
+        ]);
+
+        $this->actingAs($user)
+            ->get('/pricing')
+            ->assertOk()
+            ->assertSee('Current Spark Plan')
+            ->assertSee('Start Forge');
+    }
+
+    public function test_admin_can_edit_website_content_and_frontend_uses_it(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $this->actingAs($admin)
+            ->get(route('admin.website-content.index'))
+            ->assertOk()
+            ->assertSee('Home Content');
+
+        $content = PageContent::query()
+            ->where('page_key', 'home')
+            ->where('section_key', 'hero')
+            ->firstOrFail();
+
+        $this->actingAs($admin)
+            ->patch(route('admin.website-content.update', $content), [
+                'title' => 'Launch-ready private guidance',
+                'subtitle' => 'Edited by admin',
+                'body' => 'This hero copy came from the page content table.',
+                'button_text' => 'Begin',
+                'button_url' => '/pricing',
+                'sort_order' => 10,
+                'is_active' => '1',
+            ])
+            ->assertRedirect(route('admin.website-content.index', ['page' => 'home']));
+
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('Launch-ready private guidance')
+            ->assertSee('Edited by admin')
+            ->assertSee('This hero copy came from the page content table.')
+            ->assertSee('Begin');
+    }
+
+    public function test_admin_can_update_profile_and_password(): void
+    {
+        $admin = User::factory()->create([
+            'role' => 'admin',
+            'name' => 'Old Admin',
+            'email' => 'old-admin@example.com',
+            'password' => Hash::make('old-password'),
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.profile.edit'))
+            ->assertOk()
+            ->assertSee('Profile Details')
+            ->assertSee('Change Password');
+
+        $this->actingAs($admin)
+            ->patch(route('admin.profile.update'), [
+                'name' => 'New Admin',
+                'email' => 'new-admin@example.com',
+            ])
+            ->assertRedirect()
+            ->assertSessionHasNoErrors();
+
+        $admin->refresh();
+        $this->assertSame('New Admin', $admin->name);
+        $this->assertSame('new-admin@example.com', $admin->email);
+
+        $this->actingAs($admin)
+            ->patch(route('admin.profile.password'), [
+                'current_password' => 'old-password',
+                'new_password' => 'new-admin-password',
+                'new_password_confirmation' => 'new-admin-password',
+            ])
+            ->assertRedirect()
+            ->assertSessionHasNoErrors();
+
+        $this->assertTrue(Hash::check('new-admin-password', $admin->fresh()->password));
+    }
+
+    public function test_missing_page_content_falls_back_to_hardcoded_copy(): void
+    {
+        PageContent::query()->delete();
+
+        $this->get('/pricing')
+            ->assertOk()
+            ->assertSee('Includes 1 free live call · 30 minutes', false);
     }
 
     public function test_logged_in_pricing_checkout_shows_message_when_stripe_fails(): void

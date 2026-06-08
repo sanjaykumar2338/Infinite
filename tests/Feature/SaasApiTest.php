@@ -153,6 +153,7 @@ class SaasApiTest extends TestCase
             'id' => $user->id,
             'plan' => 'forge',
             'status' => 'active',
+            'subscription_status' => 'active',
             'stripe_customer_id' => 'cus_123',
         ]);
     }
@@ -173,7 +174,7 @@ class SaasApiTest extends TestCase
 
         $this->postJson('/api/stripe/webhook', [])->assertOk();
 
-        $this->assertDatabaseHas('users', ['id' => $user->id, 'status' => 'active']);
+        $this->assertDatabaseHas('users', ['id' => $user->id, 'status' => 'active', 'subscription_status' => 'active']);
         $this->assertNotNull($user->fresh()->current_period_end);
     }
 
@@ -192,7 +193,7 @@ class SaasApiTest extends TestCase
 
         $this->postJson('/api/stripe/webhook', [])->assertOk();
 
-        $this->assertDatabaseHas('users', ['id' => $user->id, 'status' => 'past_due']);
+        $this->assertDatabaseHas('users', ['id' => $user->id, 'status' => 'past_due', 'subscription_status' => 'past_due']);
         $this->assertTrue(app(AccessService::class)->check($user->fresh())['can_use_spark_call']);
     }
 
@@ -211,7 +212,7 @@ class SaasApiTest extends TestCase
 
         $this->postJson('/api/stripe/webhook', [])->assertOk();
 
-        $this->assertDatabaseHas('users', ['id' => $user->id, 'plan' => 'forge', 'status' => 'cancelled']);
+        $this->assertDatabaseHas('users', ['id' => $user->id, 'plan' => 'forge', 'status' => 'cancelled', 'subscription_status' => 'cancelled']);
         $this->assertTrue(app(AccessService::class)->check($user->fresh())['can_use_reports']);
     }
 
@@ -235,6 +236,7 @@ class SaasApiTest extends TestCase
             'id' => $user->id,
             'plan' => 'spark',
             'status' => 'active',
+            'subscription_status' => 'active',
             'stripe_customer_id' => 'cus_created',
             'stripe_subscription_id' => 'sub_created',
         ]);

@@ -94,6 +94,36 @@
             color: var(--admin-paper);
         }
 
+        .admin-subnav {
+            display: grid;
+            gap: .2rem;
+            grid-column: 1 / -1;
+            margin: -.15rem 0 .45rem;
+            padding-left: 1rem;
+        }
+
+        .admin-subnav a {
+            padding: .52rem .72rem;
+            border-radius: .7rem;
+            font-size: .9rem;
+            font-weight: 700;
+            color: rgba(255, 253, 248, .62);
+        }
+
+        .admin-subnav a::before {
+            content: "";
+            width: .35rem;
+            height: .35rem;
+            border-radius: 999px;
+            background: currentColor;
+            opacity: .65;
+        }
+
+        .admin-subnav a.active {
+            background: rgba(255, 253, 248, .1);
+            color: var(--admin-paper);
+        }
+
         .admin-content {
             min-width: 0;
         }
@@ -286,8 +316,19 @@
             @auth
                 <nav class="admin-nav">
                     <a class="@if(request()->routeIs('admin.dashboard')) active @endif" href="{{ route('admin.dashboard') }}">Dashboard</a>
+                    <a class="@if(request()->routeIs('admin.profile.*')) active @endif" href="{{ route('admin.profile.edit') }}">Profile</a>
                     <a class="@if(request()->routeIs('admin.users.*')) active @endif" href="{{ route('admin.users.index') }}">Users</a>
                     <a class="@if(request()->routeIs('admin.reports.*')) active @endif" href="{{ route('admin.reports.index') }}">Reports</a>
+                    <a class="@if(request()->routeIs('admin.website-content.*')) active @endif" href="{{ route('admin.website-content.index', ['page' => 'home']) }}">Website Content</a>
+                    @if(request()->routeIs('admin.website-content.*'))
+                        <div class="admin-subnav">
+                            @foreach (\App\Support\PageContentDefaults::pageLabels() as $pageKey => $pageLabel)
+                                <a class="@if(request('page', 'home') === $pageKey || (request()->route('pageContent')?->page_key === $pageKey)) active @endif" href="{{ route('admin.website-content.index', ['page' => $pageKey]) }}">
+                                    {{ $pageLabel }}
+                                </a>
+                            @endforeach
+                        </div>
+                    @endif
                     <form method="post" action="{{ route('admin.logout') }}">
                         @csrf
                         <button class="admin-logout">Logout</button>

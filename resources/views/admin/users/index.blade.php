@@ -41,10 +41,10 @@
                                 </select>
                             </td>
                             <td>
-                                <span class="admin-pill pill-{{ $user->status }} mb-2">{{ $user->status }}</span>
+                                <span class="admin-pill pill-{{ $user->billingStatus() }} mb-2">{{ $user->billingStatus() }}</span>
                                 <select class="form-select form-select-sm" form="user-form-{{ $user->id }}" name="status">
                                     @foreach (['free', 'active', 'past_due', 'cancelled'] as $status)
-                                        <option @selected($user->status === $status)>{{ $status }}</option>
+                                        <option @selected($user->billingStatus() === $status)>{{ $status }}</option>
                                     @endforeach
                                 </select>
                             </td>
@@ -59,7 +59,8 @@
                             <td class="small" style="min-width: 18rem;">
                                 <div><span class="text-muted">Customer:</span> <code>{{ $user->stripe_customer_id ?: 'n/a' }}</code></div>
                                 <div><span class="text-muted">Sub:</span> <code>{{ $user->stripe_subscription_id ?: 'n/a' }}</code></div>
-                                <div><span class="text-muted">Period:</span> {{ optional($user->current_period_end)->toDateString() ?: 'n/a' }}</div>
+                                <div><span class="text-muted">Period:</span> {{ optional($user->paidThrough())->toDateString() ?: 'n/a' }}</div>
+                                <div><span class="text-muted">Trial:</span> {{ optional($user->trial_ends_at)->toDateString() ?: 'n/a' }}</div>
                             </td>
                             <td style="min-width: 11rem;">
                                 <label class="small fw-bold text-muted">Call minutes</label>
