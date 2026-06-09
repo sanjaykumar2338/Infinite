@@ -127,6 +127,22 @@ class UserWebAuthTest extends TestCase
             ->assertSee('Includes 1 free live call · 30 minutes', false);
     }
 
+    public function test_homepage_displays_approved_sunday_and_monday_brief_cards(): void
+    {
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('WEEKLY PERFORMANCE BRIEF • SUNDAY 9 PM', false)
+            ->assertSee('Weekly Intelligence Brief')
+            ->assertSee('Meaningful patterns surfaced')
+            ->assertSee('Strategic observations delivered')
+            ->assertSee('The week, distilled.')
+            ->assertSee('MONTHLY PERFORMANCE SUMMARY • MONDAY 8 AM', false)
+            ->assertSee('Achievement Review')
+            ->assertSee('One earned badge')
+            ->assertSee('Growth documented month after month')
+            ->assertSee('No fluff. Just proof the edge is repeatable.');
+    }
+
     public function test_dashboard_shows_forge_structured_report_links(): void
     {
         $user = User::factory()->create([

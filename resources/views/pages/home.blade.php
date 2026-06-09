@@ -881,9 +881,13 @@
                     @endunless
                     @unless ($isHidden('intelligence_sunday'))
                     <article class="preview-card">
-                        <div class="card-kicker">{{ $contentSubtitle('intelligence_sunday', 'Sunday Performance Brief · 9 PM') }}</div>
-                        <h3 class="preview-card-title">{{ $contentTitle('intelligence_sunday', '11 execution signals. 2 decisive charts.') }}</h3>
-                        <p class="preview-card-copy">{!! nl2br(e($contentBody('intelligence_sunday', "Deal Momentum Verdict.\nClear leverage. Clear risk."))) !!}</p>
+                        <div class="card-kicker">{{ $contentSubtitle('intelligence_sunday', 'WEEKLY PERFORMANCE BRIEF • SUNDAY 9 PM') }}</div>
+                        <h3 class="preview-card-title">{{ $contentTitle('intelligence_sunday', 'Weekly Intelligence Brief') }}</h3>
+                        <ul class="preview-list preview-card-copy">
+                            @foreach ($paragraphs($contentBody('intelligence_sunday', "Meaningful patterns surfaced\nEmerging opportunities identified\nKey moments highlighted\nStrategic observations delivered")) as $item)
+                                <li>{{ $item }}</li>
+                            @endforeach
+                        </ul>
                         <div class="preview-visual">
                             <div class="preview-bars">
                                 <span></span>
@@ -892,18 +896,22 @@
                                 <span></span>
                             </div>
                         </div>
-                        <p class="preview-meta">No dashboards. No noise.</p>
+                        <p class="preview-meta">{{ $contentButton('intelligence_sunday', 'The week, distilled.') }}</p>
                     </article>
                     @endunless
                     @unless ($isHidden('intelligence_badge'))
                     <article class="preview-card">
-                        <div class="card-kicker">{{ $contentSubtitle('intelligence_badge', 'Monday Progress Summary · 9 AM') }}</div>
-                        <h3 class="preview-card-title">{{ $contentTitle('intelligence_badge', 'Cumulative performance analysis. One earned badge.') }}</h3>
-                        <p class="preview-card-copy">{!! nl2br(e($contentBody('intelligence_badge', 'Awarded only when behavior consistently converts into measurable deal progress.'))) !!}</p>
+                        <div class="card-kicker">{{ $contentSubtitle('intelligence_badge', 'MONTHLY PERFORMANCE SUMMARY • MONDAY 8 AM') }}</div>
+                        <h3 class="preview-card-title">{{ $contentTitle('intelligence_badge', 'Achievement Review') }}</h3>
+                        <ul class="preview-list preview-card-copy">
+                            @foreach ($paragraphs($contentBody('intelligence_badge', "One earned badge\nPerformance milestones recognized\nConsistency measured over time\nGrowth documented month after month")) as $item)
+                                <li>{{ $item }}</li>
+                            @endforeach
+                        </ul>
                         <div class="preview-visual">
                             <div class="badge-medallion">F</div>
                         </div>
-                        <p class="preview-meta">No fluff. Just proof the edge is repeatable.</p>
+                        <p class="preview-meta">{{ $contentButton('intelligence_badge', 'No fluff. Just proof the edge is repeatable.') }}</p>
                     </article>
                     @endunless
                 </div>
