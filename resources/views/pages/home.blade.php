@@ -888,14 +888,6 @@
                                 <li>{{ $item }}</li>
                             @endforeach
                         </ul>
-                        <div class="preview-visual">
-                            <div class="preview-bars">
-                                <span></span>
-                                <span></span>
-                                <span></span>
-                                <span></span>
-                            </div>
-                        </div>
                         <p class="preview-meta">{{ $contentButton('intelligence_sunday', 'The week, distilled.') }}</p>
                     </article>
                     @endunless
@@ -908,9 +900,6 @@
                                 <li>{{ $item }}</li>
                             @endforeach
                         </ul>
-                        <div class="preview-visual">
-                            <div class="badge-medallion">F</div>
-                        </div>
                         <p class="preview-meta">{{ $contentButton('intelligence_badge', 'No fluff. Just proof the edge is repeatable.') }}</p>
                     </article>
                     @endunless

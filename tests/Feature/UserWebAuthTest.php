@@ -140,7 +140,10 @@ class UserWebAuthTest extends TestCase
             ->assertSee('Achievement Review')
             ->assertSee('One earned badge')
             ->assertSee('Growth documented month after month')
-            ->assertSee('No fluff. Just proof the edge is repeatable.');
+            ->assertSee('No fluff. Just proof the edge is repeatable.')
+            ->assertDontSee('<div class="preview-visual">', false)
+            ->assertDontSee('<div class="badge-medallion">', false)
+            ->assertDontSee('<div class="preview-bars">', false);
     }
 
     public function test_dashboard_shows_forge_structured_report_links(): void
