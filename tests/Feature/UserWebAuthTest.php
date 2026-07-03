@@ -127,6 +127,21 @@ class UserWebAuthTest extends TestCase
             ->assertSee('Includes 1 free live call · 30 minutes', false);
     }
 
+    public function test_spark_billing_clarification_appears_before_checkout_ctas(): void
+    {
+        $clarification = "Your card won't be charged during your complimentary Spark session. Billing begins only if you choose to continue with a Spark subscription.";
+
+        $this->get('/spark')
+            ->assertOk()
+            ->assertSee($clarification)
+            ->assertSeeInOrder([$clarification, 'Get Started']);
+
+        $this->get('/pricing')
+            ->assertOk()
+            ->assertSee($clarification)
+            ->assertSeeInOrder([$clarification, 'Start Spark']);
+    }
+
     public function test_homepage_displays_approved_sunday_and_monday_brief_cards(): void
     {
         $this->get('/')

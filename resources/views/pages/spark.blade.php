@@ -13,6 +13,7 @@
         $isCurrentPlan = $currentUser
             && $currentUser->plan === 'spark'
             && ($currentUser->billingStatus() === 'active' || (bool) $currentUser->paidThrough()?->isFuture());
+        $sparkBillingClarification = "Your card won't be charged during your complimentary Spark session. Billing begins only if you choose to continue with a Spark subscription.";
     @endphp
 
     @unless ($isHidden('hero'))
@@ -23,6 +24,7 @@
             <h1 class="section-title mb-3">{{ $contentTitle('hero', 'Live behavioral guidance before the moment passes.') }}</h1>
             <p class="lead-copy mb-4">{!! nl2br(e($contentBody('hero', 'Spark gives every new user one private 30-minute trial call. After the trial, continued access requires a manual Stripe upgrade.'))) !!}</p>
             <div class="pricing-plan-price mb-4" style="font-size: clamp(2.25rem, 3.4vw, 2.75rem);">$79/month</div>
+            <p class="spark-billing-clarification">{{ $sparkBillingClarification }}</p>
             <div class="d-flex flex-wrap gap-3">
                 @if ($isCurrentPlan)
                     <button class="btn btn-sugar" type="button" disabled>Current Spark Plan</button>

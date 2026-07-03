@@ -14,6 +14,7 @@
         $isCurrentPlan = fn (string $plan) => $currentUser
             && $currentUser->plan === $plan
             && ($currentUser->billingStatus() === 'active' || (bool) $currentUser->paidThrough()?->isFuture());
+        $sparkBillingClarification = "Your card won't be charged during your complimentary Spark session. Billing begins only if you choose to continue with a Spark subscription.";
     @endphp
 
     <style>
@@ -949,6 +950,7 @@
                             <li>Real-time insights while the moment still matters</li>
                             <li>Simple live guidance without extra reporting layers</li>
                         </ul>
+                        <p class="spark-billing-clarification">{{ $sparkBillingClarification }}</p>
                         @if ($isCurrentPlan('spark'))
                             <button class="pricing-button" type="button" disabled>Current Spark Plan</button>
                         @else

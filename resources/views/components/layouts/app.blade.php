@@ -197,6 +197,26 @@
             line-height: 1.72;
         }
 
+        .spark-billing-clarification {
+            width: 100%;
+            max-width: 34rem;
+            margin: .25rem 0 1rem;
+            color: var(--is-brown);
+            font-size: .95rem;
+            font-weight: 700;
+            line-height: 1.55;
+            overflow-wrap: break-word;
+        }
+
+        .spark-billing-clarification::before {
+            content: "";
+            display: block;
+            width: 2.25rem;
+            height: 1px;
+            margin-bottom: .55rem;
+            background: rgba(168, 135, 63, .56);
+        }
+
         .btn-sugar {
             --bs-btn-color: #fffdf8;
             --bs-btn-bg: #b59a63;
@@ -666,6 +686,10 @@
 
             .section-title {
                 font-size: 2.45rem;
+            }
+
+            .spark-billing-clarification {
+                max-width: calc(100vw - 2.5rem);
             }
 
             .pricing-plan-row {

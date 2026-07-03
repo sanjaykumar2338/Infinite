@@ -16,6 +16,7 @@
             && ($currentUser->billingStatus() === 'active' || (bool) $currentUser->paidThrough()?->isFuture());
         $sparkCopy = $paragraphs($contentBody('spark_plan', "Includes 1 free live call · 30 minutes\n\nExperience real-time guidance before committing.\nMost people know within one call."));
         $forgeCopy = $paragraphs($contentBody('forge_plan', "For operators who need to know:\n\nWhen leverage forms.\nWhen hesitation is costly.\nWhen to move — and when to hold.\n\nIt doesn’t add complexity.\nIt removes second-guessing.\nDecisions get quieter.\nTiming gets sharper.\nResults compound."));
+        $sparkBillingClarification = "Your card won't be charged during your complimentary Spark session. Billing begins only if you choose to continue with a Spark subscription.";
     @endphp
 
     <style>
@@ -121,6 +122,17 @@
             margin-top: auto;
         }
 
+        .pricing-card-cta {
+            display: grid;
+            gap: .95rem;
+            margin-top: auto;
+        }
+
+        .pricing-card-cta .pricing-card-form,
+        .pricing-card-cta .pricing-card-action {
+            margin-top: 0;
+        }
+
         .pricing-card-form .pricing-card-action,
         button.pricing-card-action {
             width: 100%;
@@ -216,20 +228,23 @@
                     <p class="pricing-card-copy">{!! nl2br(e($copy)) !!}</p>
                 @endforeach
 
-                @if ($isCurrentPlan('spark'))
-                    <button class="pricing-card-action" type="button" disabled>Current Spark Plan</button>
-                @else
-                    <form class="pricing-card-form" method="post" action="{{ route('billing.checkout', 'spark') }}">
-                        @csrf
-                        <button class="pricing-card-action" type="submit">
-                            @auth
-                                {{ $contentButton('spark_plan', 'Start Spark — Checkout') }}
-                            @else
-                                Start Spark — Sign in to Checkout
-                            @endauth
-                        </button>
-                    </form>
-                @endif
+                <div class="pricing-card-cta">
+                    <p class="spark-billing-clarification">{{ $sparkBillingClarification }}</p>
+                    @if ($isCurrentPlan('spark'))
+                        <button class="pricing-card-action" type="button" disabled>Current Spark Plan</button>
+                    @else
+                        <form class="pricing-card-form" method="post" action="{{ route('billing.checkout', 'spark') }}">
+                            @csrf
+                            <button class="pricing-card-action" type="submit">
+                                @auth
+                                    {{ $contentButton('spark_plan', 'Start Spark — Checkout') }}
+                                @else
+                                    Start Spark — Sign in to Checkout
+                                @endauth
+                            </button>
+                        </form>
+                    @endif
+                </div>
             </article>
             @endunless
 
