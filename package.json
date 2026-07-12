@@ -4,7 +4,9 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "package:extension": "bash scripts/package-extension.sh",
+        "validate:extension": "node scripts/validate-extension.mjs"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",

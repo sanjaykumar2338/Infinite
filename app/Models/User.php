@@ -33,6 +33,10 @@ class User extends Authenticatable
         'current_period_end',
         'free_call_used',
         'call_minutes_used',
+        'extension_connected_at',
+        'extension_last_seen_at',
+        'extension_version',
+        'extension_platform',
         'role',
     ];
 
@@ -60,6 +64,8 @@ class User extends Authenticatable
             'current_period_end' => 'datetime',
             'free_call_used' => 'boolean',
             'call_minutes_used' => 'integer',
+            'extension_connected_at' => 'datetime',
+            'extension_last_seen_at' => 'datetime',
             'password' => 'hashed',
         ];
     }
@@ -96,13 +102,49 @@ class User extends Authenticatable
 
     public function billingStatus(): string
     {
-        return $this->status !== 'free'
-            ? $this->status
-            : ($this->subscription_status ?: $this->status);
+        return $this->normalizedBillingStatus();
     }
 
     public function paidThrough(): mixed
     {
         return $this->current_period_ends_at ?: $this->current_period_end;
+    }
+
+    public function normalizedPlan(): string
+    {
+        if ($this->role === 'admin') {
+            return 'admin';
+        }
+
+        if ($this->role === 'tester') {
+            return 'tester';
+        }
+
+        $plan = strtolower((string) $this->plan);
+
+        return in_array($plan, ['free', 'spark', 'forge'], true) ? $plan : 'free';
+    }
+
+    public function normalizedBillingStatus(): string
+    {
+        if ($this->hasTestingAccess()) {
+            return 'active';
+        }
+
+        $subscriptionStatus = $this->normalizeStatusValue($this->subscription_status);
+        $legacyStatus = $this->normalizeStatusValue($this->status);
+
+        return $subscriptionStatus !== 'inactive' ? $subscriptionStatus : $legacyStatus;
+    }
+
+    private function normalizeStatusValue(?string $status): string
+    {
+        return match (strtolower((string) $status)) {
+            'active' => 'active',
+            'trialing' => 'trialing',
+            'past_due', 'unpaid', 'incomplete' => 'past_due',
+            'cancelled', 'canceled', 'incomplete_expired' => 'cancelled',
+            default => 'inactive',
+        };
     }
 }

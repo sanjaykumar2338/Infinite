@@ -761,7 +761,7 @@
                         <p class="hero-positioning">Presence Intelligence for High-Stakes Conversations</p>
                         <p class="hero-detail">{!! nl2br(e($contentBody('hero', 'Infinite Sugar reads presence, timing, and conversational movement while the call is still alive, then returns calm guidance that helps the next sentence land with control.'))) !!}</p>
                         <div class="hero-actions">
-                            <a class="hero-button" href="{{ $section('hero')?->button_url ?: (auth()->check() ? route('extension.download') : route('signup')) }}">{{ $contentButton('hero', 'Install Extension') }}</a>
+                            <a class="hero-button" href="{{ $section('hero')?->button_url ?: (auth()->check() ? route('extension.show') : route('signup')) }}">{{ $contentButton('hero', 'Install Extension') }}</a>
                         </div>
                     </div>
                     <div class="hero-video-frame">

@@ -10,29 +10,39 @@ class AccessService
 
     public function check(User $user): array
     {
+        $plan = $user->normalizedPlan();
+        $billingStatus = $user->normalizedBillingStatus();
         $remainingMinutes = max(0, self::FREE_TRIAL_MINUTES - $user->call_minutes_used);
-        $billingStatus = $user->billingStatus();
         $paidThrough = $user->paidThrough();
         $paidAccess = $this->hasPaidAccess($user);
-        $fullAccess = $user->hasTestingAccess() || ($user->plan === 'forge' && $paidAccess);
-        $paidSparkAccess = $user->plan === 'spark' && $paidAccess;
+        $fullAccess = $user->hasTestingAccess() || ($plan === 'forge' && $paidAccess);
+        $paidSparkAccess = $plan === 'spark' && $paidAccess;
+        $canUseLiveGuidance = $fullAccess || $paidSparkAccess;
+        $trialAvailable = ! $user->free_call_used && $remainingMinutes > 0;
 
         return [
-            'plan' => $user->plan,
+            'authenticated' => true,
+            'plan' => $plan,
             'status' => $billingStatus,
             'subscription_status' => $billingStatus,
+            'billing_status' => $billingStatus,
             'current_period_end' => $paidThrough,
             'current_period_ends_at' => $paidThrough,
             'trial_ends_at' => $user->trial_ends_at,
-            'can_use_live_insights' => $fullAccess || $paidSparkAccess,
+            'trial_available' => $trialAvailable,
+            'permissions' => [
+                'live_guidance' => $canUseLiveGuidance,
+                'reports' => $fullAccess,
+            ],
+            'can_use_live_insights' => $canUseLiveGuidance,
             'can_use_reports' => $fullAccess,
             'can_use_charts' => $fullAccess,
             'can_use_badge_reports' => $fullAccess,
-            'can_use_spark_call' => $fullAccess || $paidSparkAccess || $remainingMinutes > 0,
+            'can_use_spark_call' => $canUseLiveGuidance || $remainingMinutes > 0,
             'free_call_allowance_minutes' => self::FREE_TRIAL_MINUTES,
             'free_call_used' => $user->free_call_used,
             'call_minutes_used' => $user->call_minutes_used,
-            'remaining_minutes' => $user->hasTestingAccess() || $paidSparkAccess || $fullAccess ? null : $remainingMinutes,
+            'remaining_minutes' => $canUseLiveGuidance ? null : $remainingMinutes,
         ];
     }
 
@@ -43,10 +53,10 @@ class AccessService
 
     private function hasPaidAccess(User $user): bool
     {
-        $billingStatus = $user->billingStatus();
+        $billingStatus = $user->normalizedBillingStatus();
         $paidThrough = $user->paidThrough();
 
-        if ($billingStatus === 'active') {
+        if (in_array($billingStatus, ['active', 'trialing'], true)) {
             return true;
         }
 

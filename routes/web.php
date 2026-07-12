@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\WebsiteContentController;
 use App\Http\Controllers\BillingCheckoutController;
+use App\Http\Controllers\ExtensionController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\UserAuthController;
 use App\Http\Controllers\UserDashboardController;
@@ -35,17 +36,8 @@ Route::get('/dashboard/charts/{reportChart}', [UserReportController::class, 'sho
 Route::get('/dashboard/badges/{badgeReport}', [UserReportController::class, 'showBadge'])
     ->middleware('auth')
     ->name('dashboard.badges.show');
-Route::get('/extension/download', function () {
-    $archive = public_path('downloads/infinite-sugar-extension.zip');
-
-    if (! file_exists($archive)) {
-        return redirect()
-            ->route('dashboard')
-            ->with('error', 'The extension download is not available yet. Please try again shortly.');
-    }
-
-    return response()->download($archive, 'infinite-sugar-extension.zip');
-})->middleware('auth')->name('extension.download');
+Route::get('/extension', [ExtensionController::class, 'show'])->middleware('auth')->name('extension.show');
+Route::get('/extension/download', [ExtensionController::class, 'download'])->middleware('auth')->name('extension.download');
 Route::match(['get', 'post'], '/billing/checkout/{plan}', BillingCheckoutController::class)
     ->whereIn('plan', ['spark', 'forge'])
     ->name('billing.checkout');

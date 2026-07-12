@@ -1,4 +1,16 @@
 <x-layouts.app title="Dashboard">
+    @php
+        $displayPlan = ucfirst($access['plan']);
+        $displayStatus = ucfirst(str_replace('_', ' ', $access['status']));
+        $displayBilling = ucfirst(str_replace('_', ' ', $access['billing_status']));
+        $extensionLastSeen = $user->extension_last_seen_at;
+        $extensionConnected = (bool) $extensionLastSeen;
+        $extensionLabel = $extensionConnected ? 'Connected' : 'Not connected yet';
+        $extensionCopy = $extensionConnected
+            ? 'Last connected '.$extensionLastSeen->diffForHumans()
+            : 'Open the Chrome extension and sign in to connect it.';
+    @endphp
+
     @if (request('checkout') === 'success')
         <div class="alert alert-success mt-4 mb-0">Checkout completed. Your billing status will update as soon as Stripe confirms the subscription.</div>
     @endif
@@ -7,9 +19,9 @@
         <div class="col-lg-7">
             <div class="eyebrow mb-3">User dashboard</div>
             <h1 class="section-title fw-bold mb-3">Welcome, {{ $user->name ?: $user->email }}.</h1>
-            <p class="lead-copy mb-0">Your Firebase login is connected to Laravel plan, access, billing status, and report records.</p>
+            <p class="lead-copy mb-0">Your plan, billing, extension connection, and reports are gathered here.</p>
             <div class="d-flex flex-wrap gap-2 mt-4">
-                <a class="btn btn-sugar" href="{{ route('extension.download') }}">Install Extension</a>
+                <a class="btn btn-sugar" href="{{ route('extension.show') }}">Install Extension</a>
                 <form method="post" action="{{ route('logout') }}">
                     @csrf
                     <button class="btn btn-soft" type="submit">Logout</button>
@@ -20,19 +32,17 @@
             <div class="surface-card p-4">
                 <div class="text-muted small fw-bold text-uppercase mb-1">Signed in as</div>
                 <div class="h4 fw-bold mb-1">{{ $user->email }}</div>
-                <div class="text-muted">Firebase UID: {{ $user->firebase_uid ?: 'n/a' }}</div>
+                <div class="text-muted">{{ $extensionCopy }}</div>
             </div>
         </div>
     </section>
 
     <section class="row g-4 mb-5">
         @foreach ([
-            ['Current plan', ucfirst($user->plan), 'Plan managed by Stripe or admin'],
-            ['Status', ucfirst(str_replace('_', ' ', $user->billingStatus())), 'Billing/access state'],
-            ['Period end', optional($user->paidThrough())->toFormattedDateString() ?: 'n/a', 'Paid-through date from Stripe'],
-            ['Free call used', $access['free_call_used'] ? 'Yes' : 'No', 'Spark trial tracking'],
-            ['Free call minutes used', $access['call_minutes_used'].' / '.$access['free_call_allowance_minutes'], 'Backend-counted Spark trial minutes'],
-            ['Remaining free minutes', $access['remaining_minutes'] ?? 'Unlimited', 'Free Spark call balance'],
+            ['Plan', $displayPlan, 'Your current InfiniteSugar access level.'],
+            ['Status', $displayStatus, 'Your account access state.'],
+            ['Billing', $displayBilling, optional($user->paidThrough())->toFormattedDateString() ? 'Paid through '.optional($user->paidThrough())->toFormattedDateString() : 'No paid period on file.'],
+            ['Extension', $extensionLabel, $extensionCopy],
         ] as [$label, $value, $copy])
             <div class="col-sm-6 col-xl-3">
                 <div class="feature-card">
@@ -48,7 +58,7 @@
         <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
             <div>
                 <h2 class="h3 fw-bold mb-2">Access Status</h2>
-                <p class="text-muted mb-0">These values are calculated by Laravel, not trusted from the extension frontend.</p>
+                <p class="text-muted mb-0">A simple view of what your account can use right now.</p>
             </div>
             <span class="metric-pill">Remaining minutes: {{ $access['remaining_minutes'] ?? 'Unlimited' }}</span>
         </div>
@@ -81,6 +91,18 @@
                 <div class="feature-card">
                     <div class="text-muted small fw-bold text-uppercase mb-2">Badge reports</div>
                     <div class="h4 fw-bold mb-0">{{ $access['can_use_badge_reports'] ? 'Unlocked' : 'Locked' }}</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="text-muted small fw-bold text-uppercase mb-2">Free call minutes used</div>
+                    <div class="h4 fw-bold mb-0">{{ $access['call_minutes_used'].' / '.$access['free_call_allowance_minutes'] }}</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="text-muted small fw-bold text-uppercase mb-2">Remaining free minutes</div>
+                    <div class="h4 fw-bold mb-0">{{ $access['remaining_minutes'] ?? 'Unlimited' }}</div>
                 </div>
             </div>
         </div>

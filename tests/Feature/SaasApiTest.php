@@ -30,8 +30,12 @@ class SaasApiTest extends TestCase
 
         $this->getJson('/api/me', $this->authHeaders())
             ->assertOk()
+            ->assertJsonPath('authenticated', true)
             ->assertJsonPath('user.email', 'new@example.com')
-            ->assertJsonPath('user.plan', 'free');
+            ->assertJsonPath('user.plan', 'free')
+            ->assertJsonPath('plan', 'free')
+            ->assertJsonPath('subscription_status', 'inactive')
+            ->assertJsonPath('billing_status', 'inactive');
 
         $this->assertDatabaseHas('users', [
             'firebase_uid' => 'firebase-123',
@@ -49,7 +53,11 @@ class SaasApiTest extends TestCase
         $this->fakeFirebase(['uid' => $free->firebase_uid, 'email' => $free->email]);
         $this->getJson('/api/access/check', $this->authHeaders())
             ->assertOk()
+            ->assertJsonPath('authenticated', true)
+            ->assertJsonPath('plan', 'free')
+            ->assertJsonPath('status', 'inactive')
             ->assertJsonPath('can_use_spark_call', true)
+            ->assertJsonPath('permissions.live_guidance', false)
             ->assertJsonPath('can_use_reports', false)
             ->assertJsonPath('free_call_allowance_minutes', 30)
             ->assertJsonPath('remaining_minutes', 30);
@@ -57,16 +65,76 @@ class SaasApiTest extends TestCase
         $this->fakeFirebase(['uid' => $spark->firebase_uid, 'email' => $spark->email]);
         $this->getJson('/api/access/check', $this->authHeaders())
             ->assertOk()
+            ->assertJsonPath('plan', 'spark')
+            ->assertJsonPath('status', 'active')
             ->assertJsonPath('can_use_spark_call', true)
             ->assertJsonPath('can_use_live_insights', true)
+            ->assertJsonPath('permissions.live_guidance', true)
+            ->assertJsonPath('permissions.reports', false)
             ->assertJsonPath('can_use_reports', false)
             ->assertJsonPath('remaining_minutes', null);
 
         $this->fakeFirebase(['uid' => $forge->firebase_uid, 'email' => $forge->email]);
         $this->getJson('/api/access/check', $this->authHeaders())
             ->assertOk()
+            ->assertJsonPath('plan', 'forge')
+            ->assertJsonPath('status', 'active')
             ->assertJsonPath('can_use_live_insights', true)
-            ->assertJsonPath('can_use_reports', true);
+            ->assertJsonPath('can_use_reports', true)
+            ->assertJsonPath('permissions.reports', true);
+    }
+
+    public function test_subscription_fields_are_normalized_for_extension_visibility(): void
+    {
+        $spark = User::factory()->create([
+            'firebase_uid' => 'normalized-spark-uid',
+            'email' => 'normalized-spark@example.com',
+            'plan' => 'spark',
+            'status' => 'free',
+            'subscription_status' => 'active',
+        ]);
+
+        $this->fakeFirebase(['uid' => $spark->firebase_uid, 'email' => $spark->email]);
+
+        $this->getJson('/api/me', $this->authHeaders())
+            ->assertOk()
+            ->assertJsonPath('plan', 'spark')
+            ->assertJsonPath('subscription_status', 'active')
+            ->assertJsonPath('billing_status', 'active')
+            ->assertJsonPath('permissions.live_guidance', true)
+            ->assertJsonPath('permissions.reports', false);
+    }
+
+    public function test_access_check_without_auth_does_not_report_free_plan(): void
+    {
+        $this->getJson('/api/access/check')
+            ->assertUnauthorized()
+            ->assertJsonMissing(['plan' => 'free']);
+    }
+
+    public function test_extension_heartbeat_records_real_connection(): void
+    {
+        $user = User::factory()->create([
+            'firebase_uid' => 'heartbeat-uid',
+            'email' => 'heartbeat@example.com',
+        ]);
+
+        $this->fakeFirebase(['uid' => $user->firebase_uid, 'email' => $user->email]);
+
+        $this->postJson('/api/extension/heartbeat', [
+            'extension_version' => '1.6.2',
+            'platform' => 'MacIntel',
+        ], $this->authHeaders())
+            ->assertOk()
+            ->assertJsonPath('connected', true)
+            ->assertJsonPath('extension_version', '1.6.2');
+
+        $user->refresh();
+
+        $this->assertNotNull($user->extension_connected_at);
+        $this->assertNotNull($user->extension_last_seen_at);
+        $this->assertSame('1.6.2', $user->extension_version);
+        $this->assertSame('MacIntel', $user->extension_platform);
     }
 
     public function test_free_spark_trial_stops_at_thirty_minutes(): void

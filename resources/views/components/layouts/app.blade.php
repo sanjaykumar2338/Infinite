@@ -740,7 +740,7 @@
                     <a class="nav-link" href="{{ route('home') }}#faq">FAQ</a>
                     @auth
                         <a class="nav-link" href="{{ route('dashboard') }}">Dashboard</a>
-                        <a class="nav-link" href="{{ route('extension.download') }}">Install Extension</a>
+                        <a class="nav-link" href="{{ route('extension.show') }}">Install Extension</a>
                         <form class="nav-logout-form" method="post" action="{{ route('logout') }}">
                             @csrf
                             <button class="nav-logout-button" type="submit">Logout</button>
@@ -769,6 +769,7 @@
             <div class="container d-flex flex-column flex-md-row justify-content-between gap-3 py-4">
                 <div class="fw-bold text-lowercase">infinitesugar</div>
                 <div class="d-flex flex-wrap gap-3">
+                    <a class="footer-link" href="mailto:contact@infinitesugar.com">contact@infinitesugar.com</a>
                     <a class="footer-link" href="{{ route('privacy') }}">Privacy Policy</a>
                     <a class="footer-link" href="{{ route('terms') }}">Terms & Conditions</a>
                 </div>

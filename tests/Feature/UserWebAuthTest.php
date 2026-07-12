@@ -88,6 +88,9 @@ class UserWebAuthTest extends TestCase
             ->assertSee('Forge Customer')
             ->assertSee('Forge')
             ->assertSee('Active')
+            ->assertSee('Billing')
+            ->assertSee('Extension')
+            ->assertSee('Not connected yet')
             ->assertSee('42')
             ->assertSee('Unlocked')
             ->assertSee('Weekly Coaching Report')
@@ -95,6 +98,22 @@ class UserWebAuthTest extends TestCase
             ->assertSee('Monthly Confidence Badge')
             ->assertSee('Install Extension')
             ->assertSee('Logout');
+    }
+
+    public function test_dashboard_shows_extension_connection_status_from_heartbeat(): void
+    {
+        $user = User::factory()->create([
+            'extension_connected_at' => now()->subHour(),
+            'extension_last_seen_at' => now()->subMinutes(5),
+            'extension_version' => '1.6.2',
+        ]);
+
+        $this->actingAs($user)
+            ->get('/dashboard')
+            ->assertOk()
+            ->assertSee('Extension')
+            ->assertSee('Connected')
+            ->assertSee('Last connected');
     }
 
     public function test_dashboard_shows_spark_call_usage_and_remaining_minutes(): void
@@ -654,13 +673,35 @@ class UserWebAuthTest extends TestCase
         $this->actingAs($user)
             ->get('/')
             ->assertOk()
-            ->assertSee(route('extension.download'), false);
+            ->assertSee(route('extension.show'), false);
     }
 
     public function test_extension_download_requires_login(): void
     {
         $this->get('/extension/download')
             ->assertRedirect('/login');
+    }
+
+    public function test_extension_install_page_requires_login(): void
+    {
+        $this->get('/extension')
+            ->assertRedirect('/login');
+    }
+
+    public function test_signed_in_user_can_view_extension_install_page(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get('/extension')
+            ->assertOk()
+            ->assertSee('How to Install and Use')
+            ->assertSee('InfiniteSugar-Chrome-Extension-v1.6.2.zip')
+            ->assertSee('Your InfiniteSugar extension download has started.')
+            ->assertSee('Developer Mode')
+            ->assertSee('Load unpacked')
+            ->assertSee('manifest.json')
+            ->assertSee('not designed for mobile Chrome');
     }
 
     public function test_signed_in_user_can_download_extension_archive(): void
@@ -670,7 +711,7 @@ class UserWebAuthTest extends TestCase
         $this->actingAs($user)
             ->get('/extension/download')
             ->assertOk()
-            ->assertDownload('infinite-sugar-extension.zip');
+            ->assertDownload('InfiniteSugar-Chrome-Extension-v1.6.2.zip');
     }
 
     public function test_logged_in_pricing_checkout_redirects_to_stripe(): void
